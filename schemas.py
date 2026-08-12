@@ -55,3 +55,113 @@ class TraceIQFindings(BaseModel):
 
     # Linked Associated Individuals
     associated_individuals_note: Optional[str] = Field(default=None, description="Summary note on associated individuals and whether connections are established or unexplained")
+
+
+
+# -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+class RiskAssessment(BaseModel):
+    """ Structured output from Agent 1 - Risk Analysis Agent """
+    case_id: str = Field(description="Unique case identifier")
+    customer_name: str = Field(description="Name of the customer")
+
+    # Threat_Matrix
+    risk_score: float = Field(description="Numerical risk score 0-100 from ThreatMetrix")  # (Higher = Riskier, and vice versa),  How likely is fraud in this specific transaction right now ?
+    trust_score: float = Field(description="Numerical trust score 0-100 from ThreatMetrix") # How clean this digital identity looks, lower = more suspicious  (How can I rely on this identity based on its history/ reputation)
+    overall_risk_rating: Literal["LOW", "MEDIUM", "MEDIUM-HIGH", "HIGH"] = Field(description="Overall risk rating") # overall_risk_rating in Schema is not something extracted from raw text. it's something Agent 1's LLM must calculate/determine itself, based on reading the raw signals (Trust Score, Risk Score, PEP match, mortality status, CCJs, etc.) and forming its own judgment.
+    key_signals: List[str] = Field(description="List of key risk signals identified across all products")  # key_signals is more extraction pulling out flags that are already explicitly stated in the raw data and compiling them into a clean list
+
+
+    # Identity verification (IDU + TrueID)
+    identity_verification_result: Literal["PASS", "FAIL", "INSUFFICIENT", "PASS (marginal)"] = Field(description="Overall result from IDU / Instant Verify International")
+    document_authentication_result: Literal["Pass", "Fail"] = Field(description="Pass/Fail result of document authentication from TrueID")
+    document_authentication_score: float = Field(description="Document authentication score 0-100 from TrueID") # high score, document is genuine, not forged. Low score = signs of tampering/forgery
+    facial_match_score: float = Field(description="Facial biometric match score 0-100 from TrueID") # Does the selfie match the document photo, high = the selfie genuinely matches the document photo, Low = doesn't convincingly match - could be a different person
+    liveness_check_passed: bool = Field(description="Whether the liveness check passed") # Is this a real live person, not a photo of a photo
+
+    # PEP and Sanctions screening (Bridger Insight XG)
+    pep_match: bool = Field(description="True if a Politically Exposed Person (PEP) match was identified for this case, False otherwise")
+    pep_confidence: Optional[float] = Field(default=None, description="Confidence score 0-100 for PEP match, if applicable") # High confidence (e.g., 92%) → very likely this really is a PEP/sanctioned person → treat seriously,   Low confidence (e.g., 58%) → could genuinely be them, or could be a coincidental name match → needs more verification before acting on it
+    sanctions_match: bool = Field(description="True if a sanctions list match was identified, False otherwise")
+    sanctions_confidence: Optional[float] = Field(default=None, description="Confidence score 0-100 for sanctions match, if applicable")
+    adverse_media_count: int = Field(description="Number of adverse media articles found")
+    state_owned_enterprise_flag: bool = Field(description="Whether the subject is linked to a state-owned enterprise")
+
+    # Due diligence and human review flags
+    confidence_score: float = Field(description="Overall confidence score 0-100 in this risk assessment") # LLM extracts from data. The LLM's own stated certainty in its assessment (this is a field the LLM fills in itself, not calculated by code, and not literally printed in the case PDF, it's the LLM's self-assessment of how sure it is, basically the LLM saying "how sure am I that my analysis of this case is correct?
+    confidence_level: Literal["LOW", "MEDIUM", "HIGH"] = Field(description="Confidence level of assessment") # LLM extracts/derives. Same as above - LLM's own label (LOW/MEDIUM/HIGH) for its confidence, alongside the numeric version.
+    requires_human_review: bool = Field(description="Whether human review is required") # CODE calculates. Not from the LLM, not from the raw data - routing function computes this
+    enhanced_due_diligence_required: bool = Field(description="Whether enhanced due diligence is required for this case") # CODE calculates. Routing function computes this.
+    enhanced_due_diligence_completed: bool = Field(description="Whether enhanced due diligence has actually been completed/carried out for this case") # LLM judges from data. The LLM reads the case text looking for evidence that EDD steps were actually carried out, and infers True/False, this is NOT a formula, it's the LLM's own judgment call based on what it reads.
+
+    # TraceIQ integration + audit fields
+    trace_iq: TraceIQFindings = Field(description="Structured findings from TraceIQ identity tracing")
+    detailed_analysis: str = Field(description="Full detailed explanation of each risk signal identified, written as connected paragraphs")
+    recommended_action: str = Field(description="Recommended action for the analyst")
+    next_steps: List[str] = Field(description="Suggested next steps")
+    regulatory_considerations: List[str] = Field(description="Relevant regulatory considerations (ungrounded, LLM's own assessment)") # # Ungrounded = LLM's own guess from memory, not backed by retrieved documents
+
+
+
+# ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+class ComplianceStatus(BaseModel):
+
+    # core compliance verdicts
+
+    """ Structured output from agent 2 - Compliance Agent """
+    case_id: str = Field(description="Unique case identifier")
+    gdpr_compliant: bool = Field(description="whether case meets GDPR requirements")
+    fca_compliant: bool = Field(description="whether case meets FCA requirements")
+    aml_kyc_compliant: bool = Field(description="whether case meets AML/KYC requirements")
+
+    # additional_safeguards_required: bool = Field(description="True if any additional safeguards are still outstanding/not yet completed for this case")
+
+    mortality_confirmed_block: bool = Field(description="True if a CONFIRMED mortality match was found (subject is deceased). When True, this forces all compliance fields to False and the case must be automatically rejected, regardless of any other findings.")
+    # If the real person is confirmed dead, whoever is applying is definitely not them - this is fraud.
+    # Once this is true, we don't need to check anything else (GDPR, FCA, AML) - the case fails immediately,
+    # no matter how clean everything else looks.\
+
+
+    compliance_flags: List[str] = Field(description="List of specific compliance problems found, in plain language")
+    '''Agent 2's RAG pipeline retrieves real text from GDPR.pdf, FCA.pdf, PEP.pdf, etc. based on this case's signals. The LLM reads that retrieved text + Agent 1's case facts, then writes each
+       specific problem it finds as one plain sentence here - e.g. "PEP match without confirmed EDD (Reg. 35, MLR 2017)". This is grounded in the actual retrieved regulation, not just LLM memory.
+    '''
+
+    regulatory_actions_required: List[str] = Field(description="List of specific actions required to bring this case into compliance")
+    '''Same retrieved regulatory text is used here, but instead of describing WHAT is wrong (that's compliance_flags), this field describes WHAT TO DO about it - the specific fix, based on what
+       the actual retrieved regulation requires - e.g. "Complete enhanced due diligence for PEP match"
+    '''
+
+
+# -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+class ReportSynthesis(BaseModel):
+    """
+    Only the fields Agent 3's LLM actually needs to generate - everything else in FinalReport is already known and filled in afterward, not regenerated by the LLM
+
+    """
+
+    executive_summary: str = Field(description="Brief executive summary")
+    overall_risk_rating: str = Field(description="Final overall risk rating")
+    decision_rationale: str = Field(description="A clear, human-readable explanation of WHY this overall decision was reached, connecting Agent 1's risk signals, Agent 2's compliance findings, and the resulting recommendation into one coherent narrative")
+    final_recommendations: List[str] = Field(description="Final recommendations")
+    final_next_steps: List[str] = Field(description="Final suggested next steps")
+
+
+class FinalReport(BaseModel):
+    """ The complete final report - built by combining Agent 3's LLM synthesis with data already known from Agent 1 and Agent 2 """
+
+    case_id: str = Field(description="Unique case identifier")
+    customer_name: str = Field(description="Name of the customer")
+
+    executive_summary: str = Field(description="Brief executive summary")
+    overall_risk_rating: str = Field(description="Final overall risk rating")
+    decision_rationale: str = Field(description="Explanation of WHY this decision was reached")
+    final_recommendations: List[str] = Field(description="Final recommendations")
+    final_next_steps: List[str] = Field(description="Final suggested next steps")
+
+    risk_assessment: RiskAssessment = Field(description="Full risk assessment from Agent 1")
+    compliance_status: ComplianceStatus = Field(description="Full compliance status from Agent 2")
+    audit_trail_reference: str = Field(description="Reference to audit trail file")
+    report_timestamp: str = Field(description="Timestamp of report generation")
