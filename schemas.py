@@ -8,6 +8,7 @@ class PreviousAddress(BaseModel):
     sources_count: int = Field(description="Number of data sources confirming this address")
     occupied_period: str = Field(description="Date range this address was occupied, e.g. '2018 - 2026'")
     forwarding_confirmed: Optional[bool] = Field(default=None, description="Whether a forwarding address link was confirmed to the next address, if applicable")
+    source_records: List[str] = Field(default_factory=list, description="List of specific source records confirming this address, e.g. 'Registry Trust: Electoral roll entry 2018-2026'")
 
 
 class Directorship(BaseModel):
@@ -24,6 +25,18 @@ class PropertyRecord(BaseModel):
     is_subject_residence: bool = Field(description="True if the subject actually lives here, False if owned but not resided in (e.g. buy-to-let)")
 
 
+class CCJRecord(BaseModel):
+    court: str = Field(description="Court that issued the County Court Judgment")
+    date: str = Field(description="Date of the judgment")
+    amount: Optional[str] = Field(default=None, description="Judgment amount, if disclosed")
+
+
+class ScreeningEvidence(BaseModel):
+    source_list: str = Field(description="Which specific list/database this match came from, e.g. 'WorldCompliance PEP Database', 'OFAC SDN List'")
+    match_record: str = Field(description="The specific record details that matched, e.g. name, DOB, category as it appears on the source list")
+    match_basis: str = Field(description="Why this was considered a match, e.g. 'Exact name and date of birth match'")
+
+
 
 class TraceIQFindings(BaseModel):
     # Identity Tracing (LexID Linking)
@@ -35,6 +48,7 @@ class TraceIQFindings(BaseModel):
     residency_score: Literal["Not Calculated", "Very Low", "Low", "Medium", "High", "Very High"] = Field(description="Confidence level the subject genuinely lives at the current address")
     last_seen: Optional[str] = Field(default=None, description="Most recent date confirming this address")
     sources_count: int = Field(description="Number of data sources backing the current address")
+    source_records: List[str] = Field(default_factory=list, description="List of specific source records confirming the current address, e.g. 'Registry Trust: Electoral roll entry confirmed 2019-present'")
 
     # Property Details
     current_property: Optional[PropertyRecord] = Field(default=None, description="Property record for the subject's current residence")
@@ -43,13 +57,14 @@ class TraceIQFindings(BaseModel):
     # Occupants
     linked_occupants_count: int = Field(description="Number of other people linked to the current address")
     linked_occupants_names: List[str] = Field(default_factory=list, description="Names of linked occupants, if known")
+    occupants_source: Optional[str] = Field(default=None, description="How the occupant links were established, e.g. 'electoral roll cross-match'")
 
     # Previous Address History
     previous_addresses: List[PreviousAddress] = Field(default_factory=list, description="List of previous addresses on file")
 
     # Financial and Corporate Records
     mortality_status: Literal["No Match", "Potential Match", "Confirmed Match"] = Field(description="Result of mortality/death register screening")
-    ccj_count: int = Field(description="Number of County Court Judgments found")
+    ccj_records: List[CCJRecord] = Field(default_factory=list, description="List of County Court Judgments found, each with court, date, and amount")
     has_bankruptcy_iva_dro: bool = Field(description="Whether any bankruptcy, IVA, or Debt Relief Order was found")
     directorships: List[Directorship] = Field(default_factory=list, description="Company directorships associated with this identity")
 
@@ -82,8 +97,10 @@ class RiskAssessment(BaseModel):
     # PEP and Sanctions screening (Bridger Insight XG)
     pep_match: bool = Field(description="True if a Politically Exposed Person (PEP) match was identified for this case, False otherwise")
     pep_confidence: Optional[float] = Field(default=None, description="Confidence score 0-100 for PEP match, if applicable") # High confidence (e.g., 92%) → very likely this really is a PEP/sanctioned person → treat seriously,   Low confidence (e.g., 58%) → could genuinely be them, or could be a coincidental name match → needs more verification before acting on it
+    pep_evidence: Optional[ScreeningEvidence] = Field(default=None, description="Source list, matched record, and match basis for the PEP match, if applicable")
     sanctions_match: bool = Field(description="True if a sanctions list match was identified, False otherwise")
     sanctions_confidence: Optional[float] = Field(default=None, description="Confidence score 0-100 for sanctions match, if applicable")
+    sanctions_evidence: Optional[ScreeningEvidence] = Field(default=None, description="Source list, matched record, and match basis for the sanctions match, if applicable")
     adverse_media_count: int = Field(description="Number of adverse media articles found")
     state_owned_enterprise_flag: bool = Field(description="Whether the subject is linked to a state-owned enterprise")
 
@@ -120,7 +137,7 @@ class ComplianceStatus(BaseModel):
     mortality_confirmed_block: bool = Field(description="True if a CONFIRMED mortality match was found (subject is deceased). When True, this forces all compliance fields to False and the case must be automatically rejected, regardless of any other findings.")
     # If the real person is confirmed dead, whoever is applying is definitely not them - this is fraud.
     # Once this is true, we don't need to check anything else (GDPR, FCA, AML) - the case fails immediately,
-    # no matter how clean everything else looks.\
+    # no matter how clean everything else looks.
 
 
     compliance_flags: List[str] = Field(description="List of specific compliance problems found, in plain language")
