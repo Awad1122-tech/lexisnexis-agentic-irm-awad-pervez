@@ -1,5 +1,5 @@
 from typing import List, Optional, Literal
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator # model_validator, the decorator needed to run custom logic before validation
 
 
 class PreviousAddress(BaseModel):
@@ -71,6 +71,35 @@ class TraceIQFindings(BaseModel):
     # Linked Associated Individuals
     associated_individuals_note: Optional[str] = Field(default=None, description="Summary note on associated individuals and whether connections are established or unexplained")
 
+
+    @model_validator(mode='before') # Tells Pydantic: run this function before validating the data against the schema
+
+    @classmethod  # Required by Pydantic - makes this function belong to the class itself, not an instance
+
+    def convert_none_lists_to_empty(cls, data):
+        # cls = the TraceIQFindings class itself
+        # data = the raw dictionary from the LLM, not yet validated
+
+        if isinstance(data, dict):
+            # Only proceed if data is actually a dictionary (normal expected case)
+
+            list_fields = ['aliases', 'additional_properties', 'linked_occupants_names',
+                          'previous_addresses', 'ccj_records', 'directorships']
+            # The 6 fields that are supposed to be lists, and are at risk of being null
+
+            for field in list_fields:
+                # Check each of those 6 fields, one at a time
+                # .get(key) is a built-in Python dictionary method
+                # that retrieves the value for a given key - safely,
+                # without crashing if the key doesn't exist.
+                if data.get(field) is None:
+                    # If the LLM wrote null for this field
+
+                    data[field] = []
+                    # replace it with an empty list instead
+
+        return data
+        # Return the corrected data, now safe for Pydantic to validate normally
 
 
 # -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

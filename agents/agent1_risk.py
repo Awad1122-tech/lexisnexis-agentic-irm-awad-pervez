@@ -12,7 +12,7 @@ load_dotenv()
 
 # Data file path
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-FILE_PATH = os.path.join(BASE_DIR, 'data', 'CASE-2026-303.pdf')
+FILE_PATH = os.path.join(BASE_DIR, 'data', 'CASE-2026-302.pdf')
 
 
 ## Step 1 of RAG Pipeline: Load the data/ document
@@ -76,7 +76,7 @@ Why we are using this here:
 def create_vector_store(chunks, case_id: str):
 
     # convert chunks to embeddings and store in ChromaDB
-    #Each case is identified by ots unuique case_id to prevent duplication
+    #Each case is identified by its unuique case_id to prevent duplication
 
     embedding_model = HuggingFaceEndpointEmbeddings(
         model = 'sentence-transformers/all-MiniLM-L6-v2',
@@ -107,11 +107,15 @@ def create_vector_store(chunks, case_id: str):
 
 ## Step 4 of RAG Pipeline: Creating retriever to search ChromaDB based similarity
 
-def create_retriever(vector_store):
+def create_retriever(vector_store, case_id: str):
 
     retriever = vector_store .as_retriever(
         search_type = "similarity",
-        search_kwargs = {"k" : 12} 
+        search_kwargs = {
+            "k" : 12,
+            "filter": {"case_id": case_id}
+
+        } 
     )
 
     return retriever
@@ -212,7 +216,7 @@ def run_agent1(file_path: str) -> RiskAssessment:
     chunks = split_documents(docs)
     case_id = get_case_id(docs)
     vector_store = create_vector_store(chunks, case_id)
-    retriever = create_retriever(vector_store)
+    retriever = create_retriever(vector_store, case_id)
 
     question = "Provide a comprehensive risk analysis of this identity verification case, covering fraud signals, identity verification, document authentication, compliance screening, and identity tracing findings."
 
@@ -220,6 +224,7 @@ def run_agent1(file_path: str) -> RiskAssessment:
     risk_assessment.case_id = case_id                          # overwrite LLM's guess with reliably extracted case_id
 
     return risk_assessment
+
 
 
 if __name__ == "__main__":
