@@ -118,6 +118,7 @@ class RiskAssessment(BaseModel):
 
     # Identity verification (IDU + TrueID)
     identity_verification_result: Literal["PASS", "FAIL", "INSUFFICIENT", "PASS (marginal)"] = Field(description="Overall result from IDU / Instant Verify International")
+    document_type: str = Field(description="Type of identity document submitted, e.g. 'UK Passport', 'International Passport', 'EU National ID'")
     document_authentication_result: Literal["Pass", "Fail"] = Field(description="Pass/Fail result of document authentication from TrueID")
     document_authentication_score: float = Field(description="Document authentication score 0-100 from TrueID") # high score, document is genuine, not forged. Low score = signs of tampering/forgery
     facial_match_score: float = Field(description="Facial biometric match score 0-100 from TrueID") # Does the selfie match the document photo, high = the selfie genuinely matches the document photo, Low = doesn't convincingly match - could be a different person
@@ -141,10 +142,10 @@ class RiskAssessment(BaseModel):
     enhanced_due_diligence_completed: bool = Field(description="Whether enhanced due diligence has actually been completed/carried out for this case") # LLM judges from data. The LLM reads the case text looking for evidence that EDD steps were actually carried out, and infers True/False, this is NOT a formula, it's the LLM's own judgment call based on what it reads.
 
     # TraceIQ integration + audit fields
-    trace_iq: TraceIQFindings = Field(description="Structured findings from TraceIQ identity tracing")
-    detailed_analysis: str = Field(description="Full detailed explanation of each risk signal identified, written as connected paragraphs")
-    recommended_action: str = Field(description="Recommended action for the analyst")
-    next_steps: List[str] = Field(description="Suggested next steps")
+    trace_iq: TraceIQFindings = Field(description="Structured findings from TraceIQ identity tracing")  # LLM reads the raw TraceIQ section of the case text and extracts/structures it into the TraceIQFindings object
+    detailed_analysis: str = Field(description="Full detailed explanation of each risk signal identified, written as connected paragraphs") # The LLM writes original explanatory prose connecting all the risk signals together
+    recommended_action: str = Field(description="Recommended action for the analyst")  # the LLM makes a judgment call, recommending an action based on its analysis of the case
+    next_steps: List[str] = Field(description="Suggested next steps") # LLM generates its own suggested next steps based on its analysis, not something extracted from the raw case text
     regulatory_considerations: List[str] = Field(description="Relevant regulatory considerations (ungrounded, LLM's own assessment)") # # Ungrounded = LLM's own guess from memory, not backed by retrieved documents
 
 
