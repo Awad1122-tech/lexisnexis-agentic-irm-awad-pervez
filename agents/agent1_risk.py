@@ -13,7 +13,7 @@ load_dotenv()
 
 # Data file path
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-FILE_PATH = os.path.join(BASE_DIR, 'data', 'CASE-2026-307.pdf')
+FILE_PATH = os.path.join(BASE_DIR, 'data', 'CASE-2026-306.pdf')
 
 
 ## Step 1 of RAG Pipeline: Load the data/ document
@@ -201,24 +201,28 @@ def create_prompt():
          5. Whether a PEP match was identified - if true, extract the source list, matched
             record, and match basis from the Bridger Insight XG section
          6. Whether a sanctions match was identified - if true, extract the same evidence detail
-         7. Adverse media count and State-Owned Enterprise flag
+         7. Adverse media findings - for each article found, extract its description and the
+            evidence type/source (e.g. "National news archive search"); and State-Owned Enterprise flag
          8. TraceIQ findings: LexID, aliases, current address with residency score and supporting
             source records, property ownership details, occupants and how they were sourced,
             previous address history with source records, mortality status, ALL CCJs found
             (with court, date, and amount for each), bankruptcy/IVA/DRO status, and company
             directorships
-         9. A detailed written explanation of each risk signal - several sentences per signal,
+        9.  A detailed written explanation of each risk signal - several sentences per signal,
              not just a label. Where the case data provides specific clarifying detail (e.g., the
              exact source of a PEP or State-Owned Enterprise connection, whether it applies to the
              subject directly or via an associated individual such as a spouse), explicitly state
-             that detail rather than summarizing generically. Put this in the detailed_analysis field.
+             that detail rather than summarizing generically. When describing numerical scores
+             (e.g., facial match, document authentication, trust, risk), ensure your characterisation
+             (high/low, strong/weak) is consistent with the actual score value provided in the
+             context. Put this in the detailed_analysis field
          10. Recommended action and suggested next steps
          11. Regulatory considerations (GDPR, FCA, AML/KYC) - your own general assessment
          12. Confidence level and confidence score (0-100) representing your certainty in
              this assessment
          13. Whether enhanced due diligence has actually been COMPLETED for this case - look
              for evidence in the case data that EDD steps were carried out. If there is no
-             such evidence, answer false.
+             such evidence, answer false
          
         {format_instructions}""")
 
@@ -285,6 +289,8 @@ def run_agent1(file_path: str) -> RiskAssessment:
 
     risk_assessment = run_risk_analysis(retriever, question)
     risk_assessment.case_id = case_id                          # overwrite LLM's guess with reliably extracted case_id
+    risk_assessment.adverse_media_count = len(risk_assessment.adverse_media_articles)  # 
+    # overwrite LLM's count with the actual list length, guaranteed accurate
 
     return risk_assessment
 

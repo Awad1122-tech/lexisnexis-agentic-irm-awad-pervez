@@ -31,6 +31,11 @@ class CCJRecord(BaseModel):
     amount: Optional[str] = Field(default=None, description="Judgment amount, if disclosed")
 
 
+class AdverseMediaArticle(BaseModel):
+    description: str = Field(description="Brief description of the adverse media finding")
+    evidence_type: Optional[str] = Field(default=None, description="Source of the finding, e.g. 'National news archive search'")
+
+
 class ScreeningEvidence(BaseModel):
     source_list: str = Field(description="Which specific list/database this match came from, e.g. 'WorldCompliance PEP Database', 'OFAC SDN List'")
     match_record: str = Field(description="The specific record details that matched, e.g. name, DOB, category as it appears on the source list")
@@ -110,8 +115,8 @@ class RiskAssessment(BaseModel):
     customer_name: str = Field(description="Name of the customer")
 
     # Threat_Matrix
-    risk_score: float = Field(description="Numerical risk score 0-100 from ThreatMetrix")  # (Higher = Riskier, and vice versa),  How likely is fraud in this specific transaction right now ?
-    trust_score: float = Field(description="Numerical trust score 0-100 from ThreatMetrix") # How clean this digital identity looks, lower = more suspicious  (How can I rely on this identity based on its history/ reputation)
+    risk_score: Optional[float] = Field(default=None, description="Numerical risk score 0-100 from ThreatMetrix, None if not calculable due to insufficient data")  # (Higher = Riskier, and vice versa),  How likely is fraud in this specific transaction right now ?
+    trust_score: Optional[float] = Field(default=None, description="Numerical trust score 0-100 from ThreatMetrix, None if not calculable due to insufficient data") # How clean this digital identity looks, lower = more suspicious  (How can I rely on this identity based on its history/ reputation)
     overall_risk_rating: Literal["LOW", "MEDIUM", "MEDIUM-HIGH", "HIGH"] = Field(description="Overall risk rating") # overall_risk_rating in Schema is not something extracted from raw text. it's something Agent 1's LLM must calculate/determine itself, based on reading the raw signals (Trust Score, Risk Score, PEP match, mortality status, CCJs, etc.) and forming its own judgment.
     key_signals: List[str] = Field(description="List of key risk signals identified across all products")  # key_signals is more extraction pulling out flags that are already explicitly stated in the raw data and compiling them into a clean list
 
@@ -131,7 +136,8 @@ class RiskAssessment(BaseModel):
     sanctions_match: bool = Field(description="True if a sanctions list match was identified, False otherwise")
     sanctions_confidence: Optional[float] = Field(default=None, description="Confidence score 0-100 for sanctions match, if applicable")
     sanctions_evidence: Optional[ScreeningEvidence] = Field(default=None, description="Source list, matched record, and match basis for the sanctions match, if applicable")
-    adverse_media_count: int = Field(description="Number of adverse media articles found")
+    adverse_media_count: int = Field(description="Total number of adverse media articles found")
+    adverse_media_articles: List[AdverseMediaArticle] = Field(default_factory=list, description="List of adverse media articles found, each with a description and evidence source")
     state_owned_enterprise_flag: bool = Field(description="Whether the subject is linked to a state-owned enterprise")
 
     # Due diligence and human review flags
@@ -147,6 +153,17 @@ class RiskAssessment(BaseModel):
     recommended_action: str = Field(description="Recommended action for the analyst")  # the LLM makes a judgment call, recommending an action based on its analysis of the case
     next_steps: List[str] = Field(description="Suggested next steps") # LLM generates its own suggested next steps based on its analysis, not something extracted from the raw case text
     regulatory_considerations: List[str] = Field(description="Relevant regulatory considerations (ungrounded, LLM's own assessment)") # # Ungrounded = LLM's own guess from memory, not backed by retrieved documents
+
+
+    @model_validator(mode='before')
+    @classmethod
+    def convert_none_lists_to_empty(cls, data):
+        if isinstance(data, dict):
+            list_fields = ['key_signals', 'adverse_media_articles', 'next_steps', 'regulatory_considerations']
+            for field in list_fields:
+                if data.get(field) is None:
+                    data[field] = []
+            return data
 
 
 
