@@ -145,8 +145,7 @@ class RiskAssessment(BaseModel):
     confidence_level: Literal["LOW", "MEDIUM", "HIGH"] = Field(description="Confidence level of assessment") # LLM extracts/derives. Same as above - LLM's own label (LOW/MEDIUM/HIGH) for its confidence, alongside the numeric version.
     requires_human_review: bool = Field(description="Whether human review is required") # CODE calculates. Not from the LLM, not from the raw data - routing function computes this
     enhanced_due_diligence_required: bool = Field(description="Whether enhanced due diligence is required for this case") # CODE calculates. Routing function computes this.
-    enhanced_due_diligence_completed: bool = Field(description="Whether enhanced due diligence has actually been completed/carried out for this case") # LLM judges from data. The LLM reads the case text looking for evidence that EDD steps were actually carried out, and infers True/False, this is NOT a formula, it's the LLM's own judgment call based on what it reads.
-
+    enhanced_due_diligence_completed: Optional[bool] = Field(default=None, description="Whether EDD was completed - None if not yet tracked by this system, requires human analyst confirmation")
     # TraceIQ integration + audit fields
     trace_iq: TraceIQFindings = Field(description="Structured findings from TraceIQ identity tracing")  # LLM reads the raw TraceIQ section of the case text and extracts/structures it into the TraceIQFindings object
     detailed_analysis: str = Field(description="Full detailed explanation of each risk signal identified, written as connected paragraphs") # The LLM writes original explanatory prose connecting all the risk signals together
@@ -177,7 +176,8 @@ class ComplianceStatus(BaseModel):
     case_id: str = Field(description="Unique case identifier")
     gdpr_compliant: bool = Field(description="whether case meets GDPR requirements")
     fca_compliant: bool = Field(description="whether case meets FCA requirements")
-    aml_kyc_compliant: bool = Field(description="whether case meets AML/KYC requirements")
+    aml_kyc_compliant: Literal["Compliant", "Non-Compliant", "Pending Verification"] = Field(description="AML/KYC compliance status - Pending Verification when EDD completion status is not yet confirmed")
+    # aml_kyc_compliant: bool = Field(description="whether case meets AML/KYC requirements")
 
     # additional_safeguards_required: bool = Field(description="True if any additional safeguards are still outstanding/not yet completed for this case")
 

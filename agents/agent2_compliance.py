@@ -102,6 +102,8 @@ def create_retriever(vector_store):
 
 # Augmentation 
 
+
+
 def create_prompt():
     parser = PydanticOutputParser(pydantic_object=ComplianceStatus)  # Create a parser tied to the ComplianceStatus schema
     format_instructions = parser.get_format_instructions()
@@ -118,7 +120,7 @@ def create_prompt():
          Never rely on general knowledge - only the specific regulatory context given."""),
 
         ("human", """Based on the following retrieved regulatory text and the risk
-         assessment findings, determine this case's compliance status:
+         assessment findings, determine this case's compliance status.
 
         Retrieved Regulatory Context:
         {context}
@@ -126,19 +128,80 @@ def create_prompt():
         Case Risk Assessment Summary:
         {risk_summary}
 
-        1. GDPR compliance: is the required safeguard (Article 22C - information,
-           representations, human intervention, right to contest) in place given whether
-           human review is required for this case?
-        2. FCA compliance: does this case demonstrate the accountability, fairness, and
-           explainability the FCA requires?
-        3. AML/KYC compliance: if a PEP match was identified, was enhanced due diligence
-           actually completed? If not, this is non-compliant per Regulation 35.
-        4. Mortality-confirmed block: if the case shows a CONFIRMED mortality match, all
-           compliance fields must be False and the case must be flagged as non-compliant,
-           regardless of any other findings.
-        5. List specific compliance flags found (in plain language, grounded in the
-           retrieved regulatory text).
-        6. List specific regulatory actions required to bring the case into compliance.
+        Apply EXACTLY the following rules, in order. Each rule's condition must be
+        checked precisely against the values given above - do not infer, generalise,
+        or apply a rule based on related-but-different values.
+
+        RULE 1 (Mortality - Confirmed): IF Mortality Status is exactly "Confirmed Match":
+            -> Set gdpr_compliant to False, fca_compliant to False, AND
+               aml_kyc_compliant to "Non-Compliant".
+            -> This overrides every other rule below. Stop here if this rule applies.
+
+        RULE 2 (Mortality - Potential): IF Mortality Status is exactly "Potential Match"
+        (and Rule 1 did NOT apply):
+            -> Set aml_kyc_compliant to "Non-Compliant".
+            -> Add a compliance flag noting manual verification is required.
+            -> Do NOT set gdpr_compliant or fca_compliant to False based on this alone.
+
+        RULE 3 (GDPR - Automated Decision Safeguards): Check the EXACT value of
+        "Requires Human Review" above.
+            -> IF Requires Human Review is exactly False: set gdpr_compliant to False
+               (no human review means Article 22C safeguards are required but not
+               currently implemented in this system).
+            -> IF Requires Human Review is exactly True: set gdpr_compliant to True
+               (a human is reviewing this case, so the automated-decision safeguard
+               concern does not apply). Do NOT set gdpr_compliant to False in this case.
+
+        RULE 4 (FCA - Accountability and Explainability): Base your decision on the
+        RETRIEVED FCA REGULATORY CONTEXT above (not general knowledge) - identify what
+        it requires regarding accountability and explainability, then assess whether
+        the Detailed Analysis satisfies that requirement.
+            -> Set fca_compliant to True or False.
+            -> REQUIRED: add one entry to compliance_flags that clearly explains your
+               decision, referencing the specific FCA principle from the retrieved
+               context that you applied.
+
+        RULE 5 (AML/KYC - Customer Due Diligence, Regulation 28): Check the EXACT
+        values of "Identity Verification Result (IDU)" and "Document Authentication
+        Result (TrueID)" above.
+            -> IF Identity Verification Result is exactly "FAIL", OR Document
+               Authentication Result is exactly "Fail": set aml_kyc_compliant to
+               "Non-Compliant".
+            -> IF both are "PASS"/"Pass" (in any form, including "PASS (marginal)"):
+               this rule does not apply - proceed to Rule 6 to determine the final
+               aml_kyc_compliant value.
+
+        RULE 6 (AML/KYC - Enhanced Due Diligence, Regulations 33 and 35): Check the
+        EXACT values of "PEP Match", "Enhanced Due Diligence Required", and "Enhanced
+        Due Diligence Completed" above - do NOT infer one field from another.
+
+            BRANCH A1 - IF PEP Match is True AND Enhanced Due Diligence Completed is
+            explicitly False: set aml_kyc_compliant to "Non-Compliant".
+
+            BRANCH A2 - IF PEP Match is True AND Enhanced Due Diligence Completed is
+            None: set aml_kyc_compliant to "Pending Verification". Add compliance flag:
+            "PEP match confirmed; EDD completion not yet verified - pending manual
+            confirmation."
+
+            BRANCH B1 - IF PEP Match is False AND Enhanced Due Diligence Required is
+            True AND Enhanced Due Diligence Completed is explicitly False: set
+            aml_kyc_compliant to "Non-Compliant".
+
+            BRANCH B2 - IF PEP Match is False AND Enhanced Due Diligence Required is
+            True AND Enhanced Due Diligence Completed is None: set aml_kyc_compliant to
+            "Pending Verification". Add compliance flag: "Enhanced due diligence
+            required; completion not yet verified - pending manual confirmation."
+
+            OTHERWISE (Enhanced Due Diligence Required is False, or no PEP/EDD concern
+            applies): set aml_kyc_compliant to "Compliant", unless Rule 5 (identity/
+            document verification failure) independently applies, in which case follow
+            Rule 5's outcome instead.
+
+        After applying all rules above:
+        7. List every compliance flag your rules triggered, in plain language,
+           grounded in the retrieved regulatory text and the specific values checked.
+        8. List specific regulatory actions required to bring the case into full
+           compliance, one action per flag raised.
 
         {format_instructions}""")
     ])
@@ -185,6 +248,8 @@ def run_compliance_analysis(retriever, risk_assessment: RiskAssessment):
     Enhanced Due Diligence Completed: {risk_assessment.enhanced_due_diligence_completed}
     Mortality Status: {risk_assessment.trace_iq.mortality_status}
     Overall Risk Rating: {risk_assessment.overall_risk_rating}
+    Identity Verification Result: {risk_assessment.identity_verification_result}
+    Document Authentication Result: {risk_assessment.document_authentication_result}
     Detailed Analysis: {risk_assessment.detailed_analysis}
     """
 
@@ -209,6 +274,7 @@ def run_agent2(risk_assessment: RiskAssessment) -> ComplianceStatus:
 
     return compliance_status
 
+'''
 
 if __name__ == "__main__":
     from agents.agent1_risk import run_agent1
@@ -218,3 +284,75 @@ if __name__ == "__main__":
     compliance_status = run_agent2(risk_assessment)
     print(compliance_status.case_id)
     print(compliance_status)
+
+'''
+
+if __name__ == "__main__":
+    from agents.agent1_risk import run_agent1
+
+    FILE_PATH = os.path.join(BASE_DIR, 'data', 'CASE-2026-303.pdf')
+    risk_assessment = run_agent1(FILE_PATH)
+
+    print("\n\n" + "="*80)
+    print("AGENT 1 OUTPUT (relevant fields only, used as input for Agent 2)")
+    print("="*80)
+    print(f"Requires Human Review: {risk_assessment.requires_human_review}")
+    print(f"Detailed Analysis: {risk_assessment.detailed_analysis}")
+    print(f"Identity Verification Result (IDU): {risk_assessment.identity_verification_result}")
+    print(f"Document Authentication Result (TrueID): {risk_assessment.document_authentication_result}")
+    print(f"Enhanced Due Diligence Required: {risk_assessment.enhanced_due_diligence_required}")
+    print(f"PEP Match: {risk_assessment.pep_match}")
+    print(f"Mortality Status: {risk_assessment.trace_iq.mortality_status}")
+
+    compliance_status = run_agent2(risk_assessment)
+
+    print("\n\n" + "="*80)
+    print("AGENT 2 OUTPUT (compliance verdict)")
+    print("="*80)
+    print(compliance_status)
+    print("\n" + "="*80 + "\n")
+
+
+
+# TODO: enhanced_due_diligence_completed - future implementation plan
+#
+# WHAT: This field tracks whether a human analyst has actually carried out
+# Enhanced Due Diligence (source of wealth check, senior management approval,
+# enhanced monitoring setup) for a specific case - a real-world action, not
+# something extractable from any identity risk report.
+#
+# WHERE IT BELONGS: main.py's workflow/state layer - NOT Agent 1, NOT Agent 2.
+# Neither agent's LLM should generate this value, since it's not a fact about
+# the applicant or the case data - it's a fact about what YOUR OWN COMPANY'S
+# compliance team has actually done, tracked by your system's workflow, not
+# read from text.
+#
+# HOW IT WOULD WORK, once built:
+# 1. Case runs through Agent 1 -> Agent 2 -> Agent 3, producing a FinalReport.
+# 2. If enhanced_due_diligence_required is True, main.py flags the case for
+#    a human analyst (e.g. via the notification/reviewer system discussed
+#    earlier), rather than assuming completion or non-completion.
+# 3. The human analyst performs the real EDD work (verifies source of wealth,
+#    gets senior sign-off, sets up monitoring).
+# 4. The analyst then manually confirms completion in the system - e.g. a
+#    simple CLI prompt, a database flag, or a field in the notification
+#    reply-handling logic already planned.
+# 5. main.py stores this confirmed value (True or False) in state, and Agent 2
+#    uses the REAL confirmed value instead of the current default of None.
+#
+# CURRENT STATE: defaults to None (not yet confirmed) everywhere, since no
+# tracking mechanism exists yet. Agent 2's compliance rules treat None as
+# "Pending Verification" rather than a hard failure - this is honest and
+# correct until step 1-5 above are built.
+
+
+
+# TODO: aml_kyc_compliant is now a 3-state field (Compliant / Non-Compliant /
+# Pending Verification) instead of a plain bool, specifically to handle the
+# enhanced_due_diligence_completed=None case honestly - a "Pending Verification"
+# result reflects genuine uncertainty (EDD required, but completion not yet
+# confirmed by a human analyst) rather than falsely asserting compliance (True)
+# or falsely asserting failure (False). Once the human-confirmation feature
+# above is built, "Pending Verification" cases should be automatically
+# re-evaluated once enhanced_due_diligence_completed changes from None to a
+# real True/False value.

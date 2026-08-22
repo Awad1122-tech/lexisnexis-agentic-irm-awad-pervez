@@ -13,7 +13,7 @@ load_dotenv()
 
 # Data file path
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-FILE_PATH = os.path.join(BASE_DIR, 'data', 'CASE-2026-306.pdf')
+FILE_PATH = os.path.join(BASE_DIR, 'data', 'CASE-2026-301.pdf')
 
 
 ## Step 1 of RAG Pipeline: Load the data/ document
@@ -220,9 +220,6 @@ def create_prompt():
          11. Regulatory considerations (GDPR, FCA, AML/KYC) - your own general assessment
          12. Confidence level and confidence score (0-100) representing your certainty in
              this assessment
-         13. Whether enhanced due diligence has actually been COMPLETED for this case - look
-             for evidence in the case data that EDD steps were carried out. If there is no
-             such evidence, answer false
          
         {format_instructions}""")
 
