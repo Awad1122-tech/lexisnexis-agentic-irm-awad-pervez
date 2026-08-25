@@ -139,9 +139,17 @@ def create_prompt():
 
         RULE 2 (Mortality - Potential): IF Mortality Status is exactly "Potential Match"
         (and Rule 1 did NOT apply):
-            -> Set aml_kyc_compliant to "Non-Compliant".
-            -> Add a compliance flag noting manual verification is required.
+            -> Set aml_kyc_compliant to EXACTLY "Non-Compliant" - NOT "Pending
+               Verification". "Pending Verification" is reserved specifically for
+               Rule 6's EDD-completion-unknown scenario and must not be used here,
+               even though both situations involve genuine uncertainty requiring
+               manual verification.
+            -> Add a compliance flag noting manual verification of mortality status is
+               required.
             -> Do NOT set gdpr_compliant or fca_compliant to False based on this alone.
+            -> This rule takes priority over Rule 6 for determining aml_kyc_compliant -
+               if Rule 2 applies, use its "Non-Compliant" outcome even if Rule 6 would
+               otherwise suggest "Pending Verification".
 
         RULE 3 (GDPR - Automated Decision Safeguards): Check the EXACT value of
         "Requires Human Review" above.
@@ -164,9 +172,10 @@ def create_prompt():
         RULE 5 (AML/KYC - Customer Due Diligence, Regulation 28): Check the EXACT
         values of "Identity Verification Result (IDU)" and "Document Authentication
         Result (TrueID)" above.
-            -> IF Identity Verification Result is exactly "FAIL", OR Document
-               Authentication Result is exactly "Fail": set aml_kyc_compliant to
-               "Non-Compliant".
+            -> IF Identity Verification Result is exactly "FAIL" OR "INSUFFICIENT", OR
+               Document Authentication Result is exactly "Fail": set aml_kyc_compliant
+               to "Non-Compliant" (basic customer due diligence could not be
+               satisfactorily completed).
             -> IF both are "PASS"/"Pass" (in any form, including "PASS (marginal)"):
                this rule does not apply - proceed to Rule 6 to determine the final
                aml_kyc_compliant value.
@@ -290,7 +299,7 @@ if __name__ == "__main__":
 if __name__ == "__main__":
     from agents.agent1_risk import run_agent1
 
-    FILE_PATH = os.path.join(BASE_DIR, 'data', 'CASE-2026-303.pdf')
+    FILE_PATH = os.path.join(BASE_DIR, 'data', 'CASE-2026-316.pdf')
     risk_assessment = run_agent1(FILE_PATH)
 
     print("\n\n" + "="*80)
@@ -301,6 +310,7 @@ if __name__ == "__main__":
     print(f"Identity Verification Result (IDU): {risk_assessment.identity_verification_result}")
     print(f"Document Authentication Result (TrueID): {risk_assessment.document_authentication_result}")
     print(f"Enhanced Due Diligence Required: {risk_assessment.enhanced_due_diligence_required}")
+    print(f"Enhanced Due Diligence Completed: {risk_assessment.enhanced_due_diligence_completed}")
     print(f"PEP Match: {risk_assessment.pep_match}")
     print(f"Mortality Status: {risk_assessment.trace_iq.mortality_status}")
 
