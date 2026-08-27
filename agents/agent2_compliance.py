@@ -8,6 +8,7 @@ Single entry point: run_agent2(risk_assessment) -> ComplianceStatus
 """
 
 from langchain_community.document_loaders import PyPDFDirectoryLoader
+from langchain_core.tools import tool
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_huggingface import HuggingFaceEndpointEmbeddings, ChatHuggingFace, HuggingFaceEndpoint
 from langchain_chroma import Chroma
@@ -86,6 +87,7 @@ def create_retriever(vector_store):
     return retriever
 
 
+
 """
     Unlike Agent 1, which runs ONE broad search (k=12) covering an entire case, document spanning many different topics (ThreatMetrix, IDU, TrueID, TraceIQ, Bridger all mixed together),
     Agent 2 will run THREE SEPARATE searches, each narrowly focused on just ONE regulatory topic:
@@ -132,6 +134,20 @@ def create_prompt():
         checked precisely against the values given above - do not infer, generalise,
         or apply a rule based on related-but-different values.
 
+        IMPORTANT: You MUST produce compliance_flags entries covering ALL THREE
+        compliance areas - GDPR, FCA, AND AML/KYC - every time, regardless of outcome.
+        Do not omit any area, even when it is fully compliant with no issues. For each
+        of the three areas, state clearly whether it is compliant or not, and why,
+        citing the specific values checked. This applies even if only 1-2 areas have
+        actual problems - the compliant area(s) still require their own explicit
+        compliance_flags entry, not just their own regulatory_actions_required entry.
+        Similarly, produce a regulatory_actions_required entry for ALL THREE areas -
+        stating the specific action needed if non-compliant, or "No action required"
+        if compliant. Each regulatory_actions_required entry MUST begin by naming
+        which compliance area it addresses (e.g. "GDPR:", "FCA:", "AML/KYC:"), even
+        when the entry is "No action required" - do not write a bare "No action
+        required" without specifying which area it refers to.
+
         RULE 1 (Mortality - Confirmed): IF Mortality Status is exactly "Confirmed Match":
             -> Set gdpr_compliant to False, fca_compliant to False, AND
                aml_kyc_compliant to "Non-Compliant".
@@ -159,6 +175,21 @@ def create_prompt():
             -> IF Requires Human Review is exactly True: set gdpr_compliant to True
                (a human is reviewing this case, so the automated-decision safeguard
                concern does not apply). Do NOT set gdpr_compliant to False in this case.
+            -> REQUIRED: produce exactly TWO SEPARATE entries in compliance_flags
+               for this rule (not one combined sentence):
+               Entry 1: state only whether a human is reviewing this case - e.g.
+               "No human is reviewing this case." or "A human is reviewing this
+               case."
+               Entry 2 MUST be EXACTLY this sentence, with only the number filled
+               in: "Confidence Score of ___ compared against the threshold of 70."
+               Replace ___ with the actual Confidence Score value from this case.
+               Do not add, remove, or rephrase any other word in this sentence.
+            -> REQUIRED: the regulatory_actions_required entry for this rule must
+               name "Article 22C" followed immediately by its definition in
+               parentheses, in this exact form: 'Article 22C (which requires
+               [specific requirement])'. This must read as a clear definition, not
+               an explanation woven into a longer sentence.
+               
 
         RULE 4 (FCA - Accountability and Explainability): Base your decision on the
         RETRIEVED FCA REGULATORY CONTEXT above (not general knowledge) - identify what
@@ -168,6 +199,10 @@ def create_prompt():
             -> REQUIRED: add one entry to compliance_flags that clearly explains your
                decision, referencing the specific FCA principle from the retrieved
                context that you applied.
+            -> Do NOT cite human review status as the reason for fca_compliant - human
+               review is Rule 3's (GDPR's) concern. Rule 4's decision must be based on
+               whether the Detailed Analysis itself is substantive, not on whether a
+               human is reviewing the case.
 
         RULE 5 (AML/KYC - Customer Due Diligence, Regulation 28): Check the EXACT
         values of "Identity Verification Result (IDU)" and "Document Authentication
@@ -179,6 +214,23 @@ def create_prompt():
             -> IF both are "PASS"/"Pass" (in any form, including "PASS (marginal)"):
                this rule does not apply - proceed to Rule 6 to determine the final
                aml_kyc_compliant value.
+
+        MANDATORY CHECK before finalizing aml_kyc_compliant: re-verify the EXACT
+        value of "Document Authentication Result" above. If it is exactly "Fail",
+        aml_kyc_compliant MUST be "Non-Compliant" - this is not optional and
+        cannot be overridden by any other consideration. Setting aml_kyc_compliant
+        to "Compliant" when Document Authentication Result is "Fail" is an error.
+
+        Note: Rule 5 has ALREADY been evaluated by the time you reach Rule 6. If Rule 5
+        set aml_kyc_compliant to "Non-Compliant", that value is FINAL and Rule 6 must
+        NOT change it to "Compliant" under any branch, including OTHERWISE.      
+
+        Note: Before writing any compliance_flags entry mentioning EDD, verify the
+        EXACT value of "Enhanced Due Diligence Required" above. Do NOT state "EDD is
+        required" unless this field is literally True - even if the case seems
+        intuitively to warrant closer scrutiny (e.g. an INSUFFICIENT identity
+        verification result), the EDD requirement is determined ONLY by this field's
+        actual value, not by general risk intuition.
 
         RULE 6 (AML/KYC - Enhanced Due Diligence, Regulations 33 and 35): Check the
         EXACT values of "PEP Match", "Enhanced Due Diligence Required", and "Enhanced
@@ -192,6 +244,12 @@ def create_prompt():
             "PEP match confirmed; EDD completion not yet verified - pending manual
             confirmation."
 
+            BRANCH A3 - IF PEP Match is True AND Enhanced Due Diligence Completed is
+            explicitly True: this branch does NOT independently fail
+            aml_kyc_compliant. If Rule 5 already set aml_kyc_compliant to
+            "Non-Compliant" earlier, that outcome stands - do not overwrite it. If
+            Rule 5 did NOT apply, set aml_kyc_compliant to "Compliant" here.
+
             BRANCH B1 - IF PEP Match is False AND Enhanced Due Diligence Required is
             True AND Enhanced Due Diligence Completed is explicitly False: set
             aml_kyc_compliant to "Non-Compliant".
@@ -201,10 +259,18 @@ def create_prompt():
             "Pending Verification". Add compliance flag: "Enhanced due diligence
             required; completion not yet verified - pending manual confirmation."
 
-            OTHERWISE (Enhanced Due Diligence Required is False, or no PEP/EDD concern
-            applies): set aml_kyc_compliant to "Compliant", unless Rule 5 (identity/
-            document verification failure) independently applies, in which case follow
-            Rule 5's outcome instead.
+            BRANCH B3 - IF PEP Match is False AND Enhanced Due Diligence Required is
+            True AND Enhanced Due Diligence Completed is explicitly True: this branch
+            does NOT independently fail aml_kyc_compliant. If Rule 5 already set
+            aml_kyc_compliant to "Non-Compliant" earlier, that outcome stands - do not
+            overwrite it. If Rule 5 did NOT apply, set aml_kyc_compliant to
+            "Compliant" here.
+
+            OTHERWISE (Enhanced Due Diligence Required is False, OR Enhanced Due
+            Diligence Completed is explicitly True per Branch A3/B3 above, or no
+            PEP/EDD concern applies): set aml_kyc_compliant to "Compliant", UNLESS
+            Rule 5 already set it to "Non-Compliant" earlier - in that case, that
+            outcome stands.
 
         After applying all rules above:
         7. List every compliance flag your rules triggered, in plain language,
@@ -226,7 +292,7 @@ def run_compliance_analysis(retriever, risk_assessment: RiskAssessment):
     llm = HuggingFaceEndpoint(
     repo_id="meta-llama/Llama-3.3-70B-Instruct",
     task="text-generation",
-    max_new_tokens=3000
+    max_new_tokens=2000
     )
 
     model = ChatHuggingFace(llm=llm)
@@ -257,6 +323,7 @@ def run_compliance_analysis(retriever, risk_assessment: RiskAssessment):
     Enhanced Due Diligence Completed: {risk_assessment.enhanced_due_diligence_completed}
     Mortality Status: {risk_assessment.trace_iq.mortality_status}
     Overall Risk Rating: {risk_assessment.overall_risk_rating}
+    Confidence Score: {risk_assessment.confidence_score}
     Identity Verification Result: {risk_assessment.identity_verification_result}
     Document Authentication Result: {risk_assessment.document_authentication_result}
     Detailed Analysis: {risk_assessment.detailed_analysis}

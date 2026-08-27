@@ -1,0 +1,35 @@
+[
+  {
+    "timestamp": "2026-08-27T05:04:19.612518",
+    "case_id": "CASE-2026-315",
+    "step": "Agent 1 - Risk Analysis",
+    "action": "Completed risk assessment",
+    "details": {
+      "overall_risk_rating": "MEDIUM-HIGH",
+      "pep_match": true,
+      "mortality_status": "No Match"
+    }
+  },
+  {
+    "timestamp": "2026-08-27T05:04:38.287591",
+    "case_id": "CASE-2026-315",
+    "step": "Routing Logic",
+    "action": "Applied deterministic overrides (GDPR Article 22C; AML/KYC Reg. 33 & 35)",
+    "details": {
+      "requires_human_review": false,
+      "enhanced_due_diligence_required": true
+    }
+  },
+  {
+    "timestamp": "2026-08-27T05:04:47.603547",
+    "case_id": "CASE-2026-315",
+    "step": "Agent 2 - Compliance",
+    "action": "Completed compliance check",
+    "details": {
+      "gdpr_compliant": false,
+      "fca_compliant": true,
+      "aml_kyc_compliant": "Non-Compliant",
+      "mortality_confirmed_block": false
+    }
+  }
+]

@@ -174,7 +174,7 @@ def create_prompt():
     # .from_messages() is a method of the ChatPromptTemplate class used to construct/create a ChatPromptTemplate object from a list of role-based messages.
 
     risk_prompt = ChatPromptTemplate.from_messages([
-        ("system", """ Your are an expert identity risk analyst at LexisNexis Risk Solution. 
+        ("system", """ You are an expert identity risk analyst at LexisNexis Risk Solution. 
          You analyse identity verification, fraud screening, and identity tracing data from
          LexisNexis products: ThreatMetrix, IDU / Instant Verify International, TrueID, TraceIQ, and Bridger Insight XG.
          You provide detailed, accurate, and professionally structured risk assessments.
@@ -238,7 +238,7 @@ def run_risk_analysis(retriever, question: str):
     llm = HuggingFaceEndpoint(
     repo_id="meta-llama/Llama-3.3-70B-Instruct",
     task="text-generation",
-    max_new_tokens=3000
+    max_new_tokens=2000
     )
 
     model = ChatHuggingFace(llm=llm)
