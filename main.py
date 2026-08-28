@@ -9,7 +9,8 @@ Handles deterministic routing logic and audit logging.
 from langgraph.graph import StateGraph, START, END
 from state import IdentityRiskState
 from agents.agent1_risk import run_agent1
-from agents.agent2_compliance import run_agent2
+from agents.agent2_compliance import run_agent2, run_fca_final_check
+from agents.agent3_report import run_agent3
 from audit_logger import create_audit_entry, write_audit_trail
 from dotenv import load_dotenv
 import datetime
@@ -154,10 +155,64 @@ def agent2_node(state: IdentityRiskState) -> IdentityRiskState:
     return state
 
 
+## Agent 3 Node:
+
+def agent3_node(state: IdentityRiskState) -> IdentityRiskState:
+    risk_assessment = state["risk_assessment"]
+    compliance_status = state["compliance_status"]
+
+    final_report = run_agent3(risk_assessment, compliance_status)
+
+    state["final_report"] = final_report
+    state["audit_log"].append(
+        create_audit_entry(
+            case_id=final_report.case_id,
+            step="Agent 3 - Report Generation",
+            action="Completed final report synthesis",
+            details={
+                "decision_rationale": final_report.decision_rationale,
+                "final_recommendations": final_report.final_recommendations
+            }
+        )
+    )
+
+    return state
+
+
+## FCA_recheck_node:
+
+def fca_recheck_node(state: IdentityRiskState) -> IdentityRiskState:
+    final_report = state["final_report"]
+
+    fca_final_result = run_fca_final_check(
+        detailed_analysis=final_report.risk_assessment.detailed_analysis,
+        decision_rationale = final_report.decision_rationale,
+        audit_log = state["audit_log"]
+    )
+
+    final_report.compliance_status.fca_compliant = fca_final_result.fca_compliant_final
+    final_report.compliance_status.compliance_flags.append(
+        f"FCA (final review, post-synthesis): {fca_final_result.reason}"
+    )
+
+    state["final_report"] = final_report
+    state["audit_log"].append(
+        create_audit_entry(
+            case_id=final_report.case_id,
+            step="FCA Final Check",
+            action="Completed post-synthesis FCA re-evaluation",
+            details={
+                "fca_compliant_final": fca_final_result.fca_compliant_final,
+                "reason": fca_final_result.reason,
+            }
+        )
+    )
+
+    return state
+
 
 ## LangGraph Construction: Connects agent1 -> routing -> agent2, in sequence, using IdentityRiskState as the shared data that flows between each step.
 #-----------------------------------------------------------------------------------------------------------------------------------------------------
-
 
 def build_graph():
 
@@ -168,12 +223,16 @@ def build_graph():
     graph.add_node("agent1", agent1_node)
     graph.add_node("routing", routing_node)
     graph.add_node("agent2", agent2_node)
+    graph.add_node("agent3", agent3_node)
+    graph.add_node("fca_recheck", fca_recheck_node)
 
     # Connecting Edges
     graph.add_edge(START, "agent1")
     graph.add_edge("agent1", "routing")
     graph.add_edge("routing", "agent2")
-    graph.add_edge("agent2", END)
+    graph.add_edge("agent2", "agent3")
+    graph.add_edge("agent3", "fca_recheck")
+    graph.add_edge("fca_recheck", END)
 
     # Comile the graph
     workflow = graph.compile()
@@ -201,6 +260,10 @@ def run_pipeline(file_path: str):
         case_id=final_state["risk_assessment"].case_id
     )
 
+    # Now that the audit trail file actually exists, update the final report
+    # with the real reference (it was an empty placeholder during Agent 3's run)
+    final_state["final_report"].audit_trail_reference = audit_filepath
+
     return final_state, audit_filepath                  # the file path where the audit trail JSON was actually saved
 
     # final_state is the fully updated version of the state, after passing through all 3 nodes (agent1 → routing → agent2) 
@@ -208,15 +271,15 @@ def run_pipeline(file_path: str):
 
 
 if __name__ == "__main__":                                                 # this code only runs if you execute main.py directly
-    FILE_PATH = os.path.join(BASE_DIR, "data", "CASE-2026-316.pdf")        # builds the full path to a specific test case file, using BASE_DIR (project's root folder) to construct it correctly.
+    from agents.agent3_report import print_readable_report
+
+    FILE_PATH = os.path.join(BASE_DIR, "data", "CASE-2026-301.pdf")        # builds the full path to a specific test case file, using BASE_DIR (project's root folder) to construct it correctly.
     final_state, audit_filepath = run_pipeline(FILE_PATH)
 
     print("\n" + "="*80)
-    print("PIPELINE COMPLETE")
+    print("PIPELINE COMPLETE - FINAL REPORT")
     print("="*80)
-    print(f"Risk Assessment: {final_state['risk_assessment']}")            # the complete RiskAssessment object (Agent 1's output, after routing_node's corrections)
-    print(f"\nCompliance Status: {final_state['compliance_status']}")      # the complete ComplianceStatus object (Agent 2's output)
-    print(f"\nAudit trail saved to: {audit_filepath}")                     # file path where the audit trail JSON was actually saved.
+    print_readable_report(final_state["final_report"])
 
 
 

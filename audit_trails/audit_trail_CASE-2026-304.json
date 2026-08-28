@@ -1,6 +1,6 @@
 [
   {
-    "timestamp": "2026-08-26T23:48:59.542989",
+    "timestamp": "2026-08-28T16:42:29.611563",
     "case_id": "CASE-2026-304",
     "step": "Agent 1 - Risk Analysis",
     "action": "Completed risk assessment",
@@ -11,7 +11,7 @@
     }
   },
   {
-    "timestamp": "2026-08-26T23:49:53.793427",
+    "timestamp": "2026-08-28T16:43:00.981120",
     "case_id": "CASE-2026-304",
     "step": "Routing Logic",
     "action": "Applied deterministic overrides (GDPR Article 22C; AML/KYC Reg. 33 & 35)",
@@ -21,15 +21,30 @@
     }
   },
   {
-    "timestamp": "2026-08-26T23:50:26.631676",
+    "timestamp": "2026-08-28T16:43:14.425915",
     "case_id": "CASE-2026-304",
     "step": "Agent 2 - Compliance",
     "action": "Completed compliance check",
     "details": {
       "gdpr_compliant": false,
-      "fca_compliant": false,
+      "fca_compliant": true,
       "aml_kyc_compliant": "Non-Compliant",
       "mortality_confirmed_block": false
+    }
+  },
+  {
+    "timestamp": "2026-08-28T16:43:23.532558",
+    "case_id": "CASE-2026-304",
+    "step": "Agent 3 - Report Generation",
+    "action": "Completed final report synthesis",
+    "details": {
+      "decision_rationale": "The high-risk rating is due to multiple signals, including a failed document authentication with a score of 54, a low facial match score of 41, and a failed liveness check, which suggest potential identity fraud. Additionally, a sanctions match was found with a confidence score of 88, and adverse media findings revealed fraud-related proceedings. These risk signals are further compounded by compliance flags, including the fact that no human is reviewing this case, and the Confidence Score of 90.0 met the threshold of 70, requiring Article 22C safeguards to be implemented. The failed identity verification and document authentication also mean that basic customer due diligence could not be satisfactorily completed, contributing to the non-compliant status with AML/KYC regulations. Therefore, the combination of these risk signals and compliance flags supports the recommendation to reject the application and perform further investigation.",
+      "final_recommendations": [
+        "Reject the application",
+        "Perform further investigation",
+        "Complete enhanced due diligence",
+        "Implement Article 22C safeguards to ensure human involvement in decision-making"
+      ]
     }
   }
 ]

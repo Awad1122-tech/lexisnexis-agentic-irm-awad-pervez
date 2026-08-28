@@ -197,6 +197,17 @@ class ComplianceStatus(BaseModel):
        the actual retrieved regulation requires - e.g. "Complete enhanced due diligence for PEP match"
     '''
 
+class FCAFinalCheck(BaseModel):
+    """
+    A SEPARATE, final FCA verdict - produced AFTER Agent 3 finishes, using the
+    complete decision_rationale and full audit trail (which don't exist yet at
+    Agent 2's point in the pipeline). This is more complete than Agent 2's
+    early-stage FCA check, which can only assess Agent 1's detailed_analysis.
+    
+    """
+    fca_compliant_final: bool = Field(description="Final FCA compliance verdict, based on the complete decision rationale and audit trail")
+    reason: str = Field(description="Brief explanation citing specific evidence from the decision rationale or audit trail")
+
 
 # -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 

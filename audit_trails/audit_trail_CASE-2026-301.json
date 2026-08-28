@@ -1,6 +1,6 @@
 [
   {
-    "timestamp": "2026-08-26T22:57:36.267935",
+    "timestamp": "2026-08-28T18:35:51.185197",
     "case_id": "CASE-2026-301",
     "step": "Agent 1 - Risk Analysis",
     "action": "Completed risk assessment",
@@ -11,7 +11,7 @@
     }
   },
   {
-    "timestamp": "2026-08-26T22:57:36.269937",
+    "timestamp": "2026-08-28T18:35:51.186199",
     "case_id": "CASE-2026-301",
     "step": "Routing Logic",
     "action": "Applied deterministic overrides (GDPR Article 22C; AML/KYC Reg. 33 & 35)",
@@ -21,7 +21,7 @@
     }
   },
   {
-    "timestamp": "2026-08-26T22:57:51.043938",
+    "timestamp": "2026-08-28T18:35:58.578500",
     "case_id": "CASE-2026-301",
     "step": "Agent 2 - Compliance",
     "action": "Completed compliance check",
@@ -30,6 +30,29 @@
       "fca_compliant": true,
       "aml_kyc_compliant": "Compliant",
       "mortality_confirmed_block": false
+    }
+  },
+  {
+    "timestamp": "2026-08-28T18:36:03.824785",
+    "case_id": "CASE-2026-301",
+    "step": "Agent 3 - Report Generation",
+    "action": "Completed final report synthesis",
+    "details": {
+      "decision_rationale": "The low risk rating is supported by several key signals, including a full match on identity verification, consistent geolocation, and a very high residency score. The compliance findings are also generally positive, with FCA and AML/KYC compliance met. However, the case is not GDPR compliant because no human is reviewing this case, as the Confidence Score of 95.0 met the threshold of 70. This means Article 22C safeguards are required but not currently in place, making this case GDPR non-compliant. Despite this, the strong risk profile and overall compliance status support the recommendation to approve the application, with the proviso that the GDPR issue must be addressed.",
+      "final_recommendations": [
+        "Approve the application",
+        "Implement human review to address GDPR compliance issue"
+      ]
+    }
+  },
+  {
+    "timestamp": "2026-08-28T18:36:05.595626",
+    "case_id": "CASE-2026-301",
+    "step": "FCA Final Check",
+    "action": "Completed post-synthesis FCA re-evaluation",
+    "details": {
+      "fca_compliant_final": true,
+      "reason": "The decision rationale provides a clear and well-reasoned explanation for the final outcome, citing specific evidence such as the full match on identity verification, consistent geolocation, and very high residency score. The audit trail also shows a complete and traceable record of every step, from risk analysis to report generation."
     }
   }
 ]

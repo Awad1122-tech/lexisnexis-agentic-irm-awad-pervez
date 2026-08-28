@@ -1,6 +1,6 @@
 [
   {
-    "timestamp": "2026-08-27T02:17:35.609521",
+    "timestamp": "2026-08-28T16:51:52.580247",
     "case_id": "CASE-2026-306",
     "step": "Agent 1 - Risk Analysis",
     "action": "Completed risk assessment",
@@ -11,7 +11,7 @@
     }
   },
   {
-    "timestamp": "2026-08-27T02:17:35.610522",
+    "timestamp": "2026-08-28T16:51:52.581250",
     "case_id": "CASE-2026-306",
     "step": "Routing Logic",
     "action": "Applied deterministic overrides (GDPR Article 22C; AML/KYC Reg. 33 & 35)",
@@ -21,7 +21,7 @@
     }
   },
   {
-    "timestamp": "2026-08-27T02:17:41.583427",
+    "timestamp": "2026-08-28T16:52:01.389033",
     "case_id": "CASE-2026-306",
     "step": "Agent 2 - Compliance",
     "action": "Completed compliance check",
@@ -30,6 +30,21 @@
       "fca_compliant": false,
       "aml_kyc_compliant": "Non-Compliant",
       "mortality_confirmed_block": true
+    }
+  },
+  {
+    "timestamp": "2026-08-28T16:52:04.513011",
+    "case_id": "CASE-2026-306",
+    "step": "Agent 3 - Report Generation",
+    "action": "Completed final report synthesis",
+    "details": {
+      "decision_rationale": "The confirmed mortality match, combined with a facial match score below the recommended threshold and an applicant age inconsistent with typical product usage patterns, suggests a high risk of identity theft or fraud. Additionally, the device used to submit the application has no prior history, which may indicate a new or stolen device. No human is reviewing this case, as the Confidence Score of 90.0 met the threshold of 70, but this means Article 22C safeguards are required but not currently in place, making this case GDPR non-compliant. The FCA accountability and explainability requirements are not met due to insufficient detailed analysis, and customer due diligence and enhanced due diligence requirements are not satisfied. Therefore, the application must be rejected due to the confirmed mortality match and potential identity theft or fraud risk.",
+      "final_recommendations": [
+        "Reject the application",
+        "Conduct enhanced due diligence",
+        "Implement Article 22C safeguards for GDPR compliance",
+        "Provide a more detailed analysis to meet FCA accountability and explainability requirements"
+      ]
     }
   }
 ]

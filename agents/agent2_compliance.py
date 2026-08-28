@@ -15,7 +15,7 @@ from langchain_chroma import Chroma
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import PydanticOutputParser
 from dotenv import load_dotenv
-from schemas import ComplianceStatus, RiskAssessment
+from schemas import ComplianceStatus, RiskAssessment, FCAFinalCheck
 import os
 
 
@@ -283,6 +283,82 @@ def create_prompt():
 
     return compliance_prompt.partial(format_instructions=format_instructions)
 
+
+def create_fca_final_check_prompt():
+    parser = PydanticOutputParser(pydantic_object=FCAFinalCheck)
+    format_instructions = parser.get_format_instructions()
+
+    prompt = ChatPromptTemplate.from_messages([
+        ("system", """You are an expert compliance reviewer performing a FINAL FCA
+         accountability and explainability check, using the complete, finished
+         decision rationale and full audit trail - the most complete evidence
+         available at any point in this system's pipeline."""),
+
+        ("human", """Based on the following detailed analysis, decision rationale,
+         and audit trail, assess whether this case demonstrates genuine FCA
+         accountability and explainability (per Consumer Duty and SM&CR principles).
+
+        Detailed Analysis:
+        {detailed_analysis}
+
+        Decision Rationale:
+        {decision_rationale}
+
+        Audit Trail Summary:
+        {audit_summary}
+
+        1. Set fca_compliant_final to True or False, based ONLY on whether the
+           decision rationale itself is well-reasoned, traceable, and
+           demonstrates genuine explainability - i.e. does it clearly explain
+           WHY the final outcome was reached, connecting specific evidence to
+           the conclusion? Also consider whether the audit trail shows a
+           complete, traceable record of every step.
+        2. CRITICAL: FCA compliance is INDEPENDENT of GDPR and AML/KYC compliance
+           status. Do NOT set fca_compliant_final to False merely because the
+           decision rationale mentions that GDPR or AML/KYC is non-compliant -
+           those are SEPARATE regulatory areas with their own rules. FCA's
+           accountability/explainability requirement is about the QUALITY of
+           the reasoning and record-keeping itself, not whether OTHER
+           regulations happen to be satisfied. A case can have excellent FCA
+           accountability (a clear, well-reasoned rationale) even while being
+           GDPR non-compliant - these are not linked.
+        3. Provide a brief reason for this verdict, citing specific evidence from
+           the QUALITY of the decision rationale's reasoning or the audit
+           trail's completeness - NOT citing GDPR or AML/KYC status as the
+           reason.
+
+        {format_instructions}""")
+    ])
+
+    return prompt.partial(format_instructions=format_instructions)
+
+
+def run_fca_final_check(detailed_analysis: str, decision_rationale: str, audit_log: list) -> FCAFinalCheck:
+
+    llm = HuggingFaceEndpoint(
+        repo_id="meta-llama/Llama-3.3-70B-Instruct",
+        task="text-generation",
+        max_new_tokens=1000
+    )
+    model = ChatHuggingFace(llm=llm)
+
+    parser = PydanticOutputParser(pydantic_object=FCAFinalCheck)
+    prompt = create_fca_final_check_prompt()
+
+    audit_summary = "\n".join(
+        f"[{entry['timestamp']}] {entry['step']}: {entry['action']}"
+        for entry in audit_log
+    )
+
+    chain = prompt | model | parser
+
+    result = chain.invoke({
+        "detailed_analysis": detailed_analysis,
+        "decision_rationale": decision_rationale,
+        "audit_summary": audit_summary
+    })
+
+    return result
 
 
 # Generation (Generating Response using LLM) using chains
