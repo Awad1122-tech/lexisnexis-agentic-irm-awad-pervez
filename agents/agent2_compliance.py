@@ -294,9 +294,13 @@ def create_fca_final_check_prompt():
          decision rationale and full audit trail - the most complete evidence
          available at any point in this system's pipeline."""),
 
-        ("human", """Based on the following detailed analysis, decision rationale,
-         and audit trail, assess whether this case demonstrates genuine FCA
-         accountability and explainability (per Consumer Duty and SM&CR principles).
+        ("human", """Based on the following RETRIEVED FCA REGULATORY TEXT, detailed
+         analysis, decision rationale, and audit trail, assess whether this case
+         demonstrates genuine FCA accountability and explainability - grounded in
+         the actual retrieved text, not general knowledge.
+
+        Retrieved FCA Regulatory Context:
+        {fca_context} 
 
         Detailed Analysis:
         {detailed_analysis}
@@ -307,33 +311,46 @@ def create_fca_final_check_prompt():
         Audit Trail Summary:
         {audit_summary}
 
-        1. Set fca_compliant_final to True or False, based ONLY on whether the
-           decision rationale itself is well-reasoned, traceable, and
-           demonstrates genuine explainability - i.e. does it clearly explain
-           WHY the final outcome was reached, connecting specific evidence to
-           the conclusion? Also consider whether the audit trail shows a
-           complete, traceable record of every step.
+        1. FIRST, read the RETRIEVED FCA REGULATORY CONTEXT above and identify
+           the specific requirement(s) it sets out (e.g. what Consumer Duty or
+           SM&CR actually requires regarding accountability and explainability).
+           THEN, check whether the Detailed Analysis, Decision Rationale, and
+           Audit Trail Summary - TOGETHER - actually satisfy that specific
+           requirement. Set fca_compliant_final to True only if they genuinely
+           meet the standard set by the retrieved text; set it to False if they
+           fall short of what the retrieved text actually requires.
         2. CRITICAL: FCA compliance is INDEPENDENT of GDPR and AML/KYC compliance
            status. Do NOT set fca_compliant_final to False merely because the
            decision rationale mentions that GDPR or AML/KYC is non-compliant -
-           those are SEPARATE regulatory areas with their own rules. FCA's
+           those are SEPARATE regulatory areas with their own rules. Specifically,
+           the ABSENCE of human review (which triggers GDPR Article 22C concerns)
+           is NOT, by itself, evidence of an FCA/SM&CR accountability failure -
+           do not cite "no human is reviewing this case" or "lack of human
+           review" as a reason for fca_compliant_final=False. FCA's
            accountability/explainability requirement is about the QUALITY of
-           the reasoning and record-keeping itself, not whether OTHER
-           regulations happen to be satisfied. A case can have excellent FCA
-           accountability (a clear, well-reasoned rationale) even while being
-           GDPR non-compliant - these are not linked.
-        3. Provide a brief reason for this verdict, citing specific evidence from
-           the QUALITY of the decision rationale's reasoning or the audit
-           trail's completeness - NOT citing GDPR or AML/KYC status as the
-           reason.
-
+           the reasoning and record-keeping itself, not whether a human
+           reviewed the case. A case can have excellent FCA accountability (a
+           clear, well-reasoned rationale, complete audit trail) even while
+           having no human review and being GDPR non-compliant - these are not
+           linked. Similarly, do NOT set fca_compliant_final to True simply
+           because GDPR or AML/KYC happen to be compliant - FCA's verdict must
+           be based solely on the retrieved FCA text and the quality of the
+           rationale/audit trail, regardless of what the other 2 areas' status
+           happens to be, in either direction.
+        3. Provide a brief reason for this verdict, referencing the specific FCA
+           principle from the retrieved context AND citing evidence from the
+           Detailed Analysis, Decision Rationale, or Audit Trail Summary - NOT
+           citing GDPR or AML/KYC status as the reason.
         {format_instructions}""")
     ])
 
     return prompt.partial(format_instructions=format_instructions)
 
 
-def run_fca_final_check(detailed_analysis: str, decision_rationale: str, audit_log: list) -> FCAFinalCheck:
+def run_fca_final_check(retriever, detailed_analysis: str, decision_rationale: str, audit_log: list) -> FCAFinalCheck:
+
+    fca_docs = retriever.invoke("FCA Consumer Duty SM&CR accountability explainability")
+    fca_context = "\n\n".join(doc.page_content for doc in fca_docs)
 
     llm = HuggingFaceEndpoint(
         repo_id="meta-llama/Llama-3.3-70B-Instruct",
@@ -353,6 +370,7 @@ def run_fca_final_check(detailed_analysis: str, decision_rationale: str, audit_l
     chain = prompt | model | parser
 
     result = chain.invoke({
+        "fca_context": fca_context,
         "detailed_analysis": detailed_analysis,
         "decision_rationale": decision_rationale,
         "audit_summary": audit_summary

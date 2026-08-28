@@ -9,8 +9,12 @@ Handles deterministic routing logic and audit logging.
 from langgraph.graph import StateGraph, START, END
 from state import IdentityRiskState
 from agents.agent1_risk import run_agent1
-from agents.agent2_compliance import run_agent2, run_fca_final_check
-from agents.agent3_report import run_agent3
+from agents.agent2_compliance import (
+    run_agent2, run_fca_final_check,
+    load_regulatory_docs, split_documents,
+    create_regulatory_vector_store, create_retriever
+)
+from agents.agent3_report import run_agent3, run_decision_rationale_revision
 from audit_logger import create_audit_entry, write_audit_trail
 from dotenv import load_dotenv
 import datetime
@@ -184,15 +188,33 @@ def agent3_node(state: IdentityRiskState) -> IdentityRiskState:
 def fca_recheck_node(state: IdentityRiskState) -> IdentityRiskState:
     final_report = state["final_report"]
 
+    #----------------------------------------------------
+    docs = load_regulatory_docs()
+    chunks = split_documents(docs)
+    vector_store = create_regulatory_vector_store(chunks)
+    retriever = create_retriever(vector_store)
+    #----------------------------------------------------
+
     fca_final_result = run_fca_final_check(
+        retriever=retriever,
         detailed_analysis=final_report.risk_assessment.detailed_analysis,
         decision_rationale = final_report.decision_rationale,
         audit_log = state["audit_log"]
     )
 
     final_report.compliance_status.fca_compliant = fca_final_result.fca_compliant_final
+
+    # Always revise decision_rationale to match the FINAL FCA verdict - guarantees
+    # the analyst's report never contradicts itself, regardless of whether the
+    # verdict actually changed
+    final_report.decision_rationale = run_decision_rationale_revision(
+        decision_rationale=final_report.decision_rationale,
+        fca_compliant_final=fca_final_result.fca_compliant_final,
+        fca_reason=fca_final_result.reason
+    )
+
     final_report.compliance_status.compliance_flags.append(
-        f"FCA (final review, post-synthesis): {fca_final_result.reason}"
+        f"FCA (final review, post-synthesis): {fca_final_result.reason}"  # add the final, authoritative FCA reasoning
     )
 
     state["final_report"] = final_report
@@ -273,7 +295,7 @@ def run_pipeline(file_path: str):
 if __name__ == "__main__":                                                 # this code only runs if you execute main.py directly
     from agents.agent3_report import print_readable_report
 
-    FILE_PATH = os.path.join(BASE_DIR, "data", "CASE-2026-301.pdf")        # builds the full path to a specific test case file, using BASE_DIR (project's root folder) to construct it correctly.
+    FILE_PATH = os.path.join(BASE_DIR, "data", "CASE-2026-304.pdf")        # builds the full path to a specific test case file, using BASE_DIR (project's root folder) to construct it correctly.
     final_state, audit_filepath = run_pipeline(FILE_PATH)
 
     print("\n" + "="*80)

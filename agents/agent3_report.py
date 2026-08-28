@@ -71,6 +71,57 @@ def create_prompt():
 
     return report_prompt.partial(format_instructions=format_instructions)
 
+"""
+Agent 3 writes the report before we know the FINAL FCA verdict. Later, that verdict gets corrected. This function goes back and fixes just the FCA part of the report so it matches the correction.
+
+"""
+def create_decision_rationale_revision_prompt():
+    prompt = ChatPromptTemplate.from_messages([
+        ("system", """You revise a single paragraph of a compliance report to
+         ensure it accurately reflects the FINAL, confirmed compliance status -
+         correcting any outdated or contradictory statements about FCA
+         compliance specifically, while keeping everything else in the
+         paragraph unchanged."""),
+
+        ("human", """Here is the current decision rationale:
+
+        {decision_rationale}
+
+        The FINAL, confirmed FCA compliance status is: {fca_compliant_final}
+        Reason: {fca_reason}
+
+        Rewrite the decision rationale so that any statement about FCA
+        compliance accurately reflects this FINAL status - correct any
+        contradictory or outdated FCA-related statements. Keep all other
+        content (risk findings, GDPR, AML/KYC discussion) exactly as it is.
+        Return ONLY the revised decision rationale paragraph, nothing else.""")
+    ])
+    return prompt
+
+
+# Actually calls the LLM to do the rewrite described above
+
+def run_decision_rationale_revision(decision_rationale: str, fca_compliant_final: bool, fca_reason: str) -> str:
+
+    llm = HuggingFaceEndpoint(
+        repo_id="meta-llama/Llama-3.3-70B-Instruct",
+        task="text-generation",
+        max_new_tokens=1000
+    )
+    model = ChatHuggingFace(llm=llm)
+
+    prompt = create_decision_rationale_revision_prompt()
+
+    chain = prompt | model
+
+    result = chain.invoke({                                  # result is an AIMessage - we only need its .content (the plain revised text)
+        "decision_rationale": decision_rationale,
+        "fca_compliant_final": fca_compliant_final,
+        "fca_reason": fca_reason
+    })
+
+    return result.content
+
 
 def run_report_generation(risk_assessment: RiskAssessment, compliance_status: ComplianceStatus) -> ReportSynthesis:
 
