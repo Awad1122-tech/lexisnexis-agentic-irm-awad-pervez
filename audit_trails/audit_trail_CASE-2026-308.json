@@ -1,0 +1,59 @@
+[
+  {
+    "timestamp": "2026-08-30T16:26:18.756095",
+    "case_id": "CASE-2026-308",
+    "step": "Agent 1 - Risk Analysis",
+    "action": "Completed risk assessment",
+    "details": {
+      "overall_risk_rating": "MEDIUM",
+      "pep_match": false,
+      "mortality_status": "No Match"
+    }
+  },
+  {
+    "timestamp": "2026-08-30T16:26:18.757098",
+    "case_id": "CASE-2026-308",
+    "step": "Routing Logic",
+    "action": "Applied deterministic overrides (GDPR Article 22C; AML/KYC Reg. 33 & 35)",
+    "details": {
+      "requires_human_review": false,
+      "enhanced_due_diligence_required": false
+    }
+  },
+  {
+    "timestamp": "2026-08-30T16:26:34.467479",
+    "case_id": "CASE-2026-308",
+    "step": "Agent 2 - Compliance",
+    "action": "Completed compliance check",
+    "details": {
+      "gdpr_compliant": false,
+      "fca_compliant": true,
+      "aml_kyc_compliant": "Compliant",
+      "mortality_confirmed_block": false
+    }
+  },
+  {
+    "timestamp": "2026-08-30T16:26:39.995915",
+    "case_id": "CASE-2026-308",
+    "step": "Agent 3 - Report Generation",
+    "action": "Completed final report synthesis",
+    "details": {
+      "decision_rationale": "The medium overall risk rating is due to a combination of positive signals, such as a full identity match, clean device reputation, and high residency score confirmed, and negative signals, including three CCJs found, an IVA registered, and an adverse media article found. The facial match score and document authentication score are both high, which suggests that the provided identity document is genuine. However, the compliance findings indicate that no human is reviewing this case, as the Confidence Score of 80.0 met the threshold of 70. This means Article 22C safeguards are required but not currently in place, making this case GDPR non-compliant. The FCA compliance status is true, and AML/KYC compliance status is also compliant. Enhanced Due Diligence is not required for this case. The negative signals, including financial difficulties and business insolvency proceedings, are relevant for AML/KYC purposes and require further investigation.",
+      "final_recommendations": [
+        "Verify Patricia Hughes' identity through further investigation",
+        "Assess the risk associated with her financial difficulties and business insolvency proceedings",
+        "Implement human review to comply with Article 22C safeguards for GDPR compliance"
+      ]
+    }
+  },
+  {
+    "timestamp": "2026-08-30T16:26:49.327212",
+    "case_id": "CASE-2026-308",
+    "step": "FCA Final Check",
+    "action": "Completed post-synthesis FCA re-evaluation",
+    "details": {
+      "fca_compliant_final": true,
+      "reason": "The decision rationale provides a clear and well-reasoned explanation for the medium overall risk rating, and the FCA compliance status is explicitly stated as true, demonstrating adherence to the Consumer Duty principle of acting in good faith and delivering good outcomes for retail customers."
+    }
+  }
+]

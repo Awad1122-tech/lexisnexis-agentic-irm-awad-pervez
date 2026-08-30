@@ -14,7 +14,7 @@ from agents.agent2_compliance import (
     load_regulatory_docs, split_documents,
     create_regulatory_vector_store, create_retriever
 )
-from agents.agent3_report import run_agent3, run_decision_rationale_revision
+from agents.agent3_report import run_agent3, run_report_revision
 from audit_logger import create_audit_entry, write_audit_trail
 from dotenv import load_dotenv
 import datetime
@@ -204,18 +204,35 @@ def fca_recheck_node(state: IdentityRiskState) -> IdentityRiskState:
 
     final_report.compliance_status.fca_compliant = fca_final_result.fca_compliant_final
 
-    # Always revise decision_rationale to match the FINAL FCA verdict - guarantees
-    # the analyst's report never contradicts itself, regardless of whether the
-    # verdict actually changed
-    final_report.decision_rationale = run_decision_rationale_revision(
+    # Always revise BOTH executive_summary and decision_rationale to match the
+    # FINAL FCA verdict - guarantees the analyst's report never contradicts
+    # itself in either section, regardless of whether the verdict actually changed
+    revised_summary, revised_rationale = run_report_revision(
+        executive_summary=final_report.executive_summary,
         decision_rationale=final_report.decision_rationale,
         fca_compliant_final=fca_final_result.fca_compliant_final,
         fca_reason=fca_final_result.reason
     )
+    final_report.executive_summary = revised_summary
+    final_report.decision_rationale = revised_rationale
 
     final_report.compliance_status.compliance_flags.append(
         f"FCA (final review, post-synthesis): {fca_final_result.reason}"  # add the final, authoritative FCA reasoning
     )
+
+    # Fixes stale "FCA: No action required" left over from the early check -
+    # rebuilds the FCA action item to match the FINAL, corrected verdict
+
+    updated_actions = []                                                            # build a fresh, corrected version of the actions list
+    for action in final_report.compliance_status.regulatory_actions_required:
+        if action.startswith("FCA:"):                                               # find the one action item that's about FCA
+            if fca_final_result.fca_compliant_final:                                # True = FCA is compliant
+                updated_actions.append("FCA: No action required (confirmed by final review).")
+            else:                                                                   # False = FCA is non-compliant
+                updated_actions.append(f"FCA: {fca_final_result.reason}")           # add the FCA action using the Final Check's own reason as the explanation
+        else:
+            updated_actions.append(action)                                          # not the FCA entry - keep it exactly as it was (GDPR or AML/KYC)
+    final_report.compliance_status.regulatory_actions_required = updated_actions    # save the corrected list back into the final report
 
     state["final_report"] = final_report
     state["audit_log"].append(
@@ -295,7 +312,7 @@ def run_pipeline(file_path: str):
 if __name__ == "__main__":                                                 # this code only runs if you execute main.py directly
     from agents.agent3_report import print_readable_report
 
-    FILE_PATH = os.path.join(BASE_DIR, "data", "CASE-2026-304.pdf")        # builds the full path to a specific test case file, using BASE_DIR (project's root folder) to construct it correctly.
+    FILE_PATH = os.path.join(BASE_DIR, "data", "CASE-2026-316.pdf")        # builds the full path to a specific test case file, using BASE_DIR (project's root folder) to construct it correctly.
     final_state, audit_filepath = run_pipeline(FILE_PATH)
 
     print("\n" + "="*80)

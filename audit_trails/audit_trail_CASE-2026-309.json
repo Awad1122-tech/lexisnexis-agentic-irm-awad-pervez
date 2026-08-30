@@ -1,0 +1,58 @@
+[
+  {
+    "timestamp": "2026-08-30T16:32:34.593003",
+    "case_id": "CASE-2026-309",
+    "step": "Agent 1 - Risk Analysis",
+    "action": "Completed risk assessment",
+    "details": {
+      "overall_risk_rating": "MEDIUM",
+      "pep_match": false,
+      "mortality_status": "No Match"
+    }
+  },
+  {
+    "timestamp": "2026-08-30T16:32:34.594006",
+    "case_id": "CASE-2026-309",
+    "step": "Routing Logic",
+    "action": "Applied deterministic overrides (GDPR Article 22C; AML/KYC Reg. 33 & 35)",
+    "details": {
+      "requires_human_review": false,
+      "enhanced_due_diligence_required": false
+    }
+  },
+  {
+    "timestamp": "2026-08-30T16:32:45.356360",
+    "case_id": "CASE-2026-309",
+    "step": "Agent 2 - Compliance",
+    "action": "Completed compliance check",
+    "details": {
+      "gdpr_compliant": false,
+      "fca_compliant": true,
+      "aml_kyc_compliant": "Compliant",
+      "mortality_confirmed_block": false
+    }
+  },
+  {
+    "timestamp": "2026-08-30T16:32:50.559630",
+    "case_id": "CASE-2026-309",
+    "step": "Agent 3 - Report Generation",
+    "action": "Completed final report synthesis",
+    "details": {
+      "decision_rationale": "The medium overall risk rating is based on multiple risk signals, including a full match on address, date of birth, and phone number, a verified active bank account, and a passing document authentication result with a score of 90/100. However, the facial match score of 70/100 is at the recommended threshold boundary, and a minor device fingerprint variance from the last known device may indicate some level of risk. From a compliance perspective, the case is FCA compliant, but not GDPR compliant, as no human is reviewing this case, and the Confidence Score of 80.0 compared against the threshold of 70 requires safeguards for the data subject's rights, freedoms, and legitimate interests, as per Article 22C. Enhanced Due Diligence is not required for this case.",
+      "final_recommendations": [
+        "Perform human review to verify the subject's identity and address history",
+        "Implement Article 22C safeguards to ensure GDPR compliance"
+      ]
+    }
+  },
+  {
+    "timestamp": "2026-08-30T16:33:00.441419",
+    "case_id": "CASE-2026-309",
+    "step": "FCA Final Check",
+    "action": "Completed post-synthesis FCA re-evaluation",
+    "details": {
+      "fca_compliant_final": true,
+      "reason": "The decision rationale provides a clear and well-reasoned explanation for the decision made, with a medium overall risk rating based on multiple risk signals, demonstrating compliance with the Consumer Duty to act in good faith and the SM&CR requirements for senior management accountability."
+    }
+  }
+]

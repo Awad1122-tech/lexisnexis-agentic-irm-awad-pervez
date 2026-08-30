@@ -194,7 +194,13 @@ def create_prompt():
 
 
          1. Overall risk rating (LOW / MEDIUM / MEDIUM-HIGH / HIGH)
-         2. Key signals identified (short list, across ALL products including TraceIQ)
+         2. Key signals identified (short list, across ALL products including TraceIQ) -
+            this MUST include BOTH risk/negative indicators (e.g. "PEP match found,"
+            "document authentication failed") AND positive/clean indicators (e.g. "full
+             identity match," "clean device reputation," "high residency score confirmed")
+            - whichever apply to this specific case. Never leave this list empty - even
+            a fully clean case has identifiable positive signals worth listing, and even
+            a high-risk case's signals should be explicitly named, not implied.
          3. ThreatMetrix: trust score, risk score
          4. Identity verification: overall result from IDU/Instant Verify, document type submitted,
             document authentication result and score, facial match score, liveness check result

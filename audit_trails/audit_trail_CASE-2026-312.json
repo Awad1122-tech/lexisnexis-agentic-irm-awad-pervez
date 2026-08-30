@@ -1,0 +1,59 @@
+[
+  {
+    "timestamp": "2026-08-30T20:13:26.253033",
+    "case_id": "CASE-2026-312",
+    "step": "Agent 1 - Risk Analysis",
+    "action": "Completed risk assessment",
+    "details": {
+      "overall_risk_rating": "MEDIUM-HIGH",
+      "pep_match": false,
+      "mortality_status": "No Match"
+    }
+  },
+  {
+    "timestamp": "2026-08-30T20:13:26.254049",
+    "case_id": "CASE-2026-312",
+    "step": "Routing Logic",
+    "action": "Applied deterministic overrides (GDPR Article 22C; AML/KYC Reg. 33 & 35)",
+    "details": {
+      "requires_human_review": false,
+      "enhanced_due_diligence_required": false
+    }
+  },
+  {
+    "timestamp": "2026-08-30T20:13:37.649140",
+    "case_id": "CASE-2026-312",
+    "step": "Agent 2 - Compliance",
+    "action": "Completed compliance check",
+    "details": {
+      "gdpr_compliant": false,
+      "fca_compliant": true,
+      "aml_kyc_compliant": "Non-Compliant",
+      "mortality_confirmed_block": false
+    }
+  },
+  {
+    "timestamp": "2026-08-30T20:13:42.868569",
+    "case_id": "CASE-2026-312",
+    "step": "Agent 3 - Report Generation",
+    "action": "Completed final report synthesis",
+    "details": {
+      "decision_rationale": "The risk assessment summary indicates a medium-high risk rating, with key signals including a failed document authentication and a low facial match score. The compliance status summary reveals that the case is GDPR non-compliant because no human is reviewing this case, as the Confidence Score of 80.0 compared against the threshold of 70 does not satisfy Article 22C safeguards. The FCA compliance is satisfied due to the clear explanation of the decision-making process. However, the AML/KYC compliance is non-compliant due to insufficient identity verification, as indicated by the failed document authentication and low facial match score. The liveness check passing and full identity match are positive indicators, but the failed document authentication and low facial match score necessitate further review. Enhanced Due Diligence is not required, as the risk score did not exceed 75 and no PEP match was found.",
+      "final_recommendations": [
+        "Conduct further verification and due diligence to confirm the identity and authenticity of the submitted document",
+        "Implement Article 22C safeguards to ensure GDPR compliance",
+        "Re-verify customer identity through alternative means to ensure authenticity of documents for AML/KYC compliance"
+      ]
+    }
+  },
+  {
+    "timestamp": "2026-08-30T20:13:52.113190",
+    "case_id": "CASE-2026-312",
+    "step": "FCA Final Check",
+    "action": "Completed post-synthesis FCA re-evaluation",
+    "details": {
+      "fca_compliant_final": true,
+      "reason": "The Decision Rationale provides a clear explanation of the decision-making process, satisfying the FCA's requirement for transparency and explainability, as outlined in PRIN 2A.2.2R and the SM&CR."
+    }
+  }
+]

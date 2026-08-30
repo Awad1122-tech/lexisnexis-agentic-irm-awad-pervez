@@ -1,0 +1,59 @@
+[
+  {
+    "timestamp": "2026-08-30T13:04:37.410953",
+    "case_id": "CASE-2026-302",
+    "step": "Agent 1 - Risk Analysis",
+    "action": "Completed risk assessment",
+    "details": {
+      "overall_risk_rating": "MEDIUM",
+      "pep_match": false,
+      "mortality_status": "No Match"
+    }
+  },
+  {
+    "timestamp": "2026-08-30T13:04:37.412957",
+    "case_id": "CASE-2026-302",
+    "step": "Routing Logic",
+    "action": "Applied deterministic overrides (GDPR Article 22C; AML/KYC Reg. 33 & 35)",
+    "details": {
+      "requires_human_review": false,
+      "enhanced_due_diligence_required": false
+    }
+  },
+  {
+    "timestamp": "2026-08-30T13:04:46.877995",
+    "case_id": "CASE-2026-302",
+    "step": "Agent 2 - Compliance",
+    "action": "Completed compliance check",
+    "details": {
+      "gdpr_compliant": false,
+      "fca_compliant": true,
+      "aml_kyc_compliant": "Compliant",
+      "mortality_confirmed_block": false
+    }
+  },
+  {
+    "timestamp": "2026-08-30T13:04:51.848872",
+    "case_id": "CASE-2026-302",
+    "step": "Agent 3 - Report Generation",
+    "action": "Completed final report synthesis",
+    "details": {
+      "decision_rationale": "The risk assessment findings, including the new device and first transaction from this device, raise some concerns, but the full identity match from IDU/Instant Verify International and the pass result from document authentication with a high score provide strong evidence of the subject's identity. The facial match score and liveness check results also support the authenticity of the subject. However, no human is reviewing this case, as the Confidence Score of 80.0 met the threshold of 70. This means Article 22C safeguards are required but not currently in place, making this case GDPR non-compliant. Despite this, the AML/KYC compliance status is satisfactory, and the FCA compliance status is also satisfactory, with no action required. The moderate transaction velocity and recent move to a new address require further monitoring, supporting the recommendation to continue monitoring the subject's activity.",
+      "final_recommendations": [
+        "Continue to monitor the subject's activity",
+        "Review the case if any new information becomes available",
+        "Implement Article 22C safeguards to ensure GDPR compliance"
+      ]
+    }
+  },
+  {
+    "timestamp": "2026-08-30T13:05:01.997177",
+    "case_id": "CASE-2026-302",
+    "step": "FCA Final Check",
+    "action": "Completed post-synthesis FCA re-evaluation",
+    "details": {
+      "fca_compliant_final": true,
+      "reason": "The decision rationale provides a clear and well-reasoned explanation for the risk assessment and compliance status, meeting the Consumer Duty requirement to act in good faith and provide honest, fair, and open dealing with retail consumers (PRIN 2A.2.2R). The audit trail summary provides a record of the steps taken during the risk analysis and compliance check, demonstrating senior management accountability and adherence to the SM&CR."
+    }
+  }
+]

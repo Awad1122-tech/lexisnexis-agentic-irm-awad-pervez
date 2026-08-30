@@ -1,0 +1,58 @@
+[
+  {
+    "timestamp": "2026-08-30T16:19:22.536559",
+    "case_id": "CASE-2026-307",
+    "step": "Agent 1 - Risk Analysis",
+    "action": "Completed risk assessment",
+    "details": {
+      "overall_risk_rating": "MEDIUM-HIGH",
+      "pep_match": false,
+      "mortality_status": "No Match"
+    }
+  },
+  {
+    "timestamp": "2026-08-30T16:19:22.537560",
+    "case_id": "CASE-2026-307",
+    "step": "Routing Logic",
+    "action": "Applied deterministic overrides (GDPR Article 22C; AML/KYC Reg. 33 & 35)",
+    "details": {
+      "requires_human_review": false,
+      "enhanced_due_diligence_required": false
+    }
+  },
+  {
+    "timestamp": "2026-08-30T16:19:33.926586",
+    "case_id": "CASE-2026-307",
+    "step": "Agent 2 - Compliance",
+    "action": "Completed compliance check",
+    "details": {
+      "gdpr_compliant": false,
+      "fca_compliant": true,
+      "aml_kyc_compliant": "Compliant",
+      "mortality_confirmed_block": false
+    }
+  },
+  {
+    "timestamp": "2026-08-30T16:19:39.216612",
+    "case_id": "CASE-2026-307",
+    "step": "Agent 3 - Report Generation",
+    "action": "Completed final report synthesis",
+    "details": {
+      "decision_rationale": "The medium-high risk rating is due to the combination of risk signals, including multiple accounts linked to the same device in a 30-day window and high transaction velocity, which may indicate a potential fraud ring. Although the identity verification result is a pass, and the document authentication result is also a pass with a high score of 93, the ThreatMetrix risk score of 68 indicates a higher risk of fraud. The compliance findings indicate that no human is reviewing this case, as the Confidence Score of 80 met the threshold of 70. This means Article 22C safeguards are required but not currently in place, making this case GDPR non-compliant. The FCA compliance status is true, and AML/KYC compliance is also compliant.",
+      "final_recommendations": [
+        "Review the case thoroughly to confirm the identity and assess the risk of fraud",
+        "Implement human review for automated decision-making to ensure GDPR compliance"
+      ]
+    }
+  },
+  {
+    "timestamp": "2026-08-30T16:19:49.858770",
+    "case_id": "CASE-2026-307",
+    "step": "FCA Final Check",
+    "action": "Completed post-synthesis FCA re-evaluation",
+    "details": {
+      "fca_compliant_final": true,
+      "reason": "The Decision Rationale provides a clear and well-reasoned explanation for the medium-high risk rating, citing specific risk signals and mitigation factors, demonstrating compliance with the Consumer Duty to act in good faith and honesty (PRIN 2A.2.2R). The Audit Trail Summary also shows a complete and transparent record of the decision-making process, meeting the SM&CR's emphasis on senior management accountability."
+    }
+  }
+]

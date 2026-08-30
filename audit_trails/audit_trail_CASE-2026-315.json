@@ -1,0 +1,59 @@
+[
+  {
+    "timestamp": "2026-08-30T21:43:34.448317",
+    "case_id": "CASE-2026-315",
+    "step": "Agent 1 - Risk Analysis",
+    "action": "Completed risk assessment",
+    "details": {
+      "overall_risk_rating": "MEDIUM",
+      "pep_match": true,
+      "mortality_status": "No Match"
+    }
+  },
+  {
+    "timestamp": "2026-08-30T21:43:48.577884",
+    "case_id": "CASE-2026-315",
+    "step": "Routing Logic",
+    "action": "Applied deterministic overrides (GDPR Article 22C; AML/KYC Reg. 33 & 35)",
+    "details": {
+      "requires_human_review": false,
+      "enhanced_due_diligence_required": true
+    }
+  },
+  {
+    "timestamp": "2026-08-30T21:44:04.231740",
+    "case_id": "CASE-2026-315",
+    "step": "Agent 2 - Compliance",
+    "action": "Completed compliance check",
+    "details": {
+      "gdpr_compliant": false,
+      "fca_compliant": true,
+      "aml_kyc_compliant": "Compliant",
+      "mortality_confirmed_block": false
+    }
+  },
+  {
+    "timestamp": "2026-08-30T21:44:09.563073",
+    "case_id": "CASE-2026-315",
+    "step": "Agent 3 - Report Generation",
+    "action": "Completed final report synthesis",
+    "details": {
+      "decision_rationale": "The case presents a medium risk rating due to several factors, including a PEP match with a confidence score of 58 and an inconsistent transaction pattern. Although the subject's identity was fully verified and their device reputation is clean, the PEP match and inconsistent transaction pattern require further review. The compliance findings also indicate that the case is GDPR non-compliant because no human is reviewing this case, as the Confidence Score of 80.0 met the threshold of 70. This means Article 22C safeguards are required but not currently in place. The FCA compliance is satisfied due to the detailed analysis providing a clear explanation of the case. Enhanced Due Diligence is required for this case because the PEP match is confirmed, and it has been completed. The combination of these risk signals and compliance findings supports the final recommendation to review the case further.",
+      "final_recommendations": [
+        "Implement Article 22C safeguards to ensure GDPR compliance",
+        "Continue to monitor the subject's transaction pattern for any further inconsistencies",
+        "Verify the subject's identity and assess the risk of potential fraudulent activity"
+      ]
+    }
+  },
+  {
+    "timestamp": "2026-08-30T21:44:19.669171",
+    "case_id": "CASE-2026-315",
+    "step": "FCA Final Check",
+    "action": "Completed post-synthesis FCA re-evaluation",
+    "details": {
+      "fca_compliant_final": true,
+      "reason": "The decision rationale provides a clear explanation of the case, citing specific evidence such as the PEP match and inconsistent transaction pattern, and the audit trail summary demonstrates a clear record-keeping process, which satisfies the FCA's requirements for accountability and explainability under the Consumer Duty and SM&CR principles."
+    }
+  }
+]

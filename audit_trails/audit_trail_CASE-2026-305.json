@@ -1,0 +1,59 @@
+[
+  {
+    "timestamp": "2026-08-30T15:03:21.171966",
+    "case_id": "CASE-2026-305",
+    "step": "Agent 1 - Risk Analysis",
+    "action": "Completed risk assessment",
+    "details": {
+      "overall_risk_rating": "MEDIUM-HIGH",
+      "pep_match": false,
+      "mortality_status": "No Match"
+    }
+  },
+  {
+    "timestamp": "2026-08-30T15:03:21.173970",
+    "case_id": "CASE-2026-305",
+    "step": "Routing Logic",
+    "action": "Applied deterministic overrides (GDPR Article 22C; AML/KYC Reg. 33 & 35)",
+    "details": {
+      "requires_human_review": false,
+      "enhanced_due_diligence_required": false
+    }
+  },
+  {
+    "timestamp": "2026-08-30T15:03:32.451901",
+    "case_id": "CASE-2026-305",
+    "step": "Agent 2 - Compliance",
+    "action": "Completed compliance check",
+    "details": {
+      "gdpr_compliant": false,
+      "fca_compliant": true,
+      "aml_kyc_compliant": "Compliant",
+      "mortality_confirmed_block": false
+    }
+  },
+  {
+    "timestamp": "2026-08-30T15:03:37.722246",
+    "case_id": "CASE-2026-305",
+    "step": "Agent 3 - Report Generation",
+    "action": "Completed final report synthesis",
+    "details": {
+      "decision_rationale": "The case presents a medium-high risk due to several factors, including a full name match and address match with historically different individual, and a date of birth mismatch. The address match is a positive indicator, but the historical association with a different individual raises concerns. The date of birth mismatch and phone number not previously associated with this identity are also red flags. The new device with no prior history and thin device history, combined with the application being submitted outside typical hours, suggest potential fraudulent activity. On the other hand, the passing document authentication with a score of 88/100 and facial match score of 79/100 are positive indicators. No human is reviewing this case, as the Confidence Score of 70.0 met the threshold of 70. This means Article 22C safeguards are required but not currently in place, making this case GDPR non-compliant. Enhanced Due Diligence is not required, but the case still requires careful review due to the medium-high risk rating.",
+      "final_recommendations": [
+        "Implement human review for automated decision-making to address GDPR non-compliance",
+        "Verify the subject's identity through additional means, such as in-person verification or further documentation",
+        "Review the case carefully due to the medium-high risk rating"
+      ]
+    }
+  },
+  {
+    "timestamp": "2026-08-30T15:03:49.567617",
+    "case_id": "CASE-2026-305",
+    "step": "FCA Final Check",
+    "action": "Completed post-synthesis FCA re-evaluation",
+    "details": {
+      "fca_compliant_final": false,
+      "reason": "The decision rationale does not explicitly demonstrate how the firm is acting in good faith, meeting the information needs of retail consumers, or ensuring that the business is effectively controlled, as required by PRIN 2A.2.2R and the Consumer Duty."
+    }
+  }
+]

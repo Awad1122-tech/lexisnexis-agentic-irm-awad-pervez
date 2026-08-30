@@ -148,9 +148,22 @@ def create_prompt():
         when the entry is "No action required" - do not write a bare "No action
         required" without specifying which area it refers to.
 
-        RULE 1 (Mortality - Confirmed): IF Mortality Status is exactly "Confirmed Match":
+            RULE 1 (Mortality - Confirmed): IF Mortality Status is exactly "Confirmed Match":
             -> Set gdpr_compliant to False, fca_compliant to False, AND
                aml_kyc_compliant to "Non-Compliant".
+            -> REQUIRED: when this rule applies, the compliance_flags entry
+               explaining fca_compliant and gdpr_compliant must state that this is
+               due to the CONFIRMED MORTALITY MATCH overriding all other rules -
+               do NOT attribute the False values to any other cause (e.g. do not
+               claim "insufficient detailed analysis" as the reason).
+            -> CRITICAL: do NOT attribute "Requires Human Review" being True or
+               False to the mortality match. Requires Human Review is determined
+               SOLELY by the Confidence Score vs. threshold of 70 (Rule 3's own
+               logic) - it is completely unrelated to mortality status. Even when
+               Rule 1 applies, the compliance_flags entry about human review must
+               still cite the Confidence Score and threshold as the reason, exactly
+               as Rule 3 specifies - never say "no human is reviewing because of
+               the mortality match" or similar.
             -> This overrides every other rule below. Stop here if this rule applies.
 
         RULE 2 (Mortality - Potential): IF Mortality Status is exactly "Potential Match"
@@ -184,11 +197,19 @@ def create_prompt():
                in: "Confidence Score of ___ compared against the threshold of 70."
                Replace ___ with the actual Confidence Score value from this case.
                Do not add, remove, or rephrase any other word in this sentence.
+            -> REQUIRED: the regulatory_actions_required entry for this rule MUST
+               begin with the exact prefix "GDPR:" (e.g. "GDPR: No action required..."
+               or "GDPR: Article 22C..."). This is essential for downstream
+               processing - do not omit or vary this prefix.
             -> REQUIRED: the regulatory_actions_required entry for this rule must
+               reflect the ACTUAL gdpr_compliant value. IF gdpr_compliant is False:
                name "Article 22C" followed immediately by its definition in
                parentheses, in this exact form: 'Article 22C (which requires
-               [specific requirement])'. This must read as a clear definition, not
-               an explanation woven into a longer sentence.
+               [specific requirement])', explaining that these safeguards need to be
+               implemented. IF gdpr_compliant is True: state "No action required -
+               human review is already in place, satisfying Article 22C" - do NOT
+               recommend implementing human review or Article 22C safeguards when
+               they are already satisfied.
                
 
         RULE 4 (FCA - Accountability and Explainability): Base your decision on the
@@ -203,6 +224,10 @@ def create_prompt():
                review is Rule 3's (GDPR's) concern. Rule 4's decision must be based on
                whether the Detailed Analysis itself is substantive, not on whether a
                human is reviewing the case.
+            -> REQUIRED: the regulatory_actions_required entry for this rule MUST begin
+               with the exact prefix "FCA:" (e.g. "FCA: No action required." or "FCA:
+               [specific remediation action]"). This is essential for downstream
+               processing - do not omit or vary this prefix.
 
         RULE 5 (AML/KYC - Customer Due Diligence, Regulation 28): Check the EXACT
         values of "Identity Verification Result (IDU)" and "Document Authentication
@@ -214,6 +239,13 @@ def create_prompt():
             -> IF both are "PASS"/"Pass" (in any form, including "PASS (marginal)"):
                this rule does not apply - proceed to Rule 6 to determine the final
                aml_kyc_compliant value.
+        IMPORTANT: When describing the remediation action for a Rule 5 failure
+        (in regulatory_actions_required), do NOT use the phrase "enhanced due
+        diligence" - this specifically refers to the SEPARATE Enhanced Due
+        Diligence Required/Completed fields (Regulations 33/35), not basic
+        customer due diligence (Regulation 28). Instead, use wording like
+        "repeat identity verification" or "re-verify customer identity through
+        alternative means" for Rule 5 remediation.
 
         MANDATORY CHECK before finalizing aml_kyc_compliant: re-verify the EXACT
         value of "Document Authentication Result" above. If it is exactly "Fail",

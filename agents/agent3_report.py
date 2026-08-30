@@ -40,7 +40,23 @@ def create_prompt():
         {compliance_summary}
 
         1. Write a brief executive summary (2-3 sentences) covering the case's
-           overall outcome.
+           overall outcome. This summary MUST briefly mention the compliance
+           status of ALL THREE areas - GDPR, FCA, AND AML/KYC - EXACTLY as
+           given in the Compliance Status Summary above (gdpr_compliant,
+           fca_compliant, aml_kyc_compliant) - do NOT state a compliance
+           status opposite to what is actually given. For each area, include
+           a SHORT reason in parentheses (a few words, not a full sentence).
+           This reason MUST be taken from the CONTENT of that area's own
+           Compliance Flags entry (e.g. "detailed analysis satisfies FCA
+           principles" or "no PEP match, no EDD required") - it must NOT be
+           "no action required" or similar text taken from
+           Regulatory Actions Required, since that describes the remediation
+           action, not the underlying reason. Do NOT invent or guess a
+           reason, and do NOT borrow a reason from a different compliance
+           area. This summary MUST also be factually consistent with the
+           Enhanced Due Diligence status stated later in this report - if EDD
+           is not required, do NOT mention it as required or needed anywhere
+           in this summary.
         2. State the final overall risk rating.
         3. Write a decision rationale that CONNECTS the risk findings and
            compliance findings into one coherent explanation - explicitly
@@ -63,6 +79,29 @@ def create_prompt():
            actually true.
            This is the most important field - do not just list findings
            separately, synthesise them into a genuine narrative.
+        IMPORTANT: Always explicitly state whether Enhanced Due Diligence is
+        required for this case, AND WHY, based on risk_score and PEP Match
+        (e.g. "Enhanced Due Diligence: Required, because PEP Match is True" or
+        "Enhanced Due Diligence: Required, because risk score exceeded 75" or
+        "Enhanced Due Diligence: Not required, as risk score did not exceed 75
+        and no PEP match was found"). If Required is True AND Completed is
+        True, also state that it has been confirmed completed. If Required is
+        True and Completed is False or None, do not state "not completed" as
+        a separate fact - instead, naturally include completing it as part of
+        the recommendations/next steps. If Required is False, do NOT
+        recommend enhanced due diligence anywhere in the report, even if
+        Agent 1's own risk narrative suggests it - the deterministic Required
+        field is authoritative. Additionally, do NOT use vague phrases like
+        "additional due diligence" or "further due diligence" anywhere in the
+        report, as these could be confused with Enhanced Due Diligence
+        specifically - use precise language instead (e.g. "gather additional
+        identity documents," "conduct further identity checks").
+        IMPORTANT: Check GDPR compliance status above. If gdpr_compliant is True
+        (a human IS reviewing this case, Article 22C safeguards are already
+        satisfied), do NOT recommend "implement human review" or "implement
+        Article 22C safeguards" anywhere in the report - these are already in
+        place. Only recommend implementing these safeguards if gdpr_compliant
+        is False (no human review, safeguards genuinely missing).
         4. List final recommendations for the analyst.
         5. List final next steps.
 
@@ -75,33 +114,40 @@ def create_prompt():
 Agent 3 writes the report before we know the FINAL FCA verdict. Later, that verdict gets corrected. This function goes back and fixes just the FCA part of the report so it matches the correction.
 
 """
-def create_decision_rationale_revision_prompt():
+def create_report_revision_prompt():
     prompt = ChatPromptTemplate.from_messages([
-        ("system", """You revise a single paragraph of a compliance report to
-         ensure it accurately reflects the FINAL, confirmed compliance status -
-         correcting any outdated or contradictory statements about FCA
-         compliance specifically, while keeping everything else in the
-         paragraph unchanged."""),
+        ("system", """You revise two parts of a compliance report to ensure they
+         accurately reflect the FINAL, confirmed compliance status - correcting
+         any outdated or contradictory statements about FCA compliance
+         specifically, while keeping everything else unchanged."""),
 
-        ("human", """Here is the current decision rationale:
+        ("human", """Here is the current executive summary:
+
+        {executive_summary}
+
+        Here is the current decision rationale:
 
         {decision_rationale}
 
         The FINAL, confirmed FCA compliance status is: {fca_compliant_final}
         Reason: {fca_reason}
 
-        Rewrite the decision rationale so that any statement about FCA
-        compliance accurately reflects this FINAL status - correct any
-        contradictory or outdated FCA-related statements. Keep all other
-        content (risk findings, GDPR, AML/KYC discussion) exactly as it is.
-        Return ONLY the revised decision rationale paragraph, nothing else.""")
+        Rewrite BOTH the executive summary and decision rationale so that any
+        statement about FCA compliance accurately reflects this FINAL status -
+        correct any contradictory or outdated FCA-related statements in
+        EITHER section. Keep all other content (risk findings, GDPR, AML/KYC
+        discussion) exactly as it is.
+
+        Return your response in EXACTLY this format, nothing else:
+        EXECUTIVE_SUMMARY: [revised executive summary here]
+        DECISION_RATIONALE: [revised decision rationale here]""")
     ])
     return prompt
 
 
 # Actually calls the LLM to do the rewrite described above
 
-def run_decision_rationale_revision(decision_rationale: str, fca_compliant_final: bool, fca_reason: str) -> str:
+def run_report_revision(executive_summary: str, decision_rationale: str, fca_compliant_final: bool, fca_reason: str):
 
     llm = HuggingFaceEndpoint(
         repo_id="meta-llama/Llama-3.3-70B-Instruct",
@@ -110,17 +156,24 @@ def run_decision_rationale_revision(decision_rationale: str, fca_compliant_final
     )
     model = ChatHuggingFace(llm=llm)
 
-    prompt = create_decision_rationale_revision_prompt()
+    prompt = create_report_revision_prompt()
+
 
     chain = prompt | model
 
     result = chain.invoke({                                  # result is an AIMessage - we only need its .content (the plain revised text)
+        "executive_summary": executive_summary,
         "decision_rationale": decision_rationale,
         "fca_compliant_final": fca_compliant_final,
         "fca_reason": fca_reason
     })
 
-    return result.content
+    # Parse the specific format the LLM was asked to return
+    text = result.content
+    revised_summary = text.split("EXECUTIVE_SUMMARY:")[1].split("DECISION_RATIONALE:")[0].strip()
+    revised_rationale = text.split("DECISION_RATIONALE:")[1].strip()
+
+    return revised_summary, revised_rationale
 
 
 def run_report_generation(risk_assessment: RiskAssessment, compliance_status: ComplianceStatus) -> ReportSynthesis:
@@ -143,6 +196,8 @@ def run_report_generation(risk_assessment: RiskAssessment, compliance_status: Co
     Key Signals: {', '.join(risk_assessment.key_signals)}
     Detailed Analysis: {risk_assessment.detailed_analysis}
     Recommended Action: {risk_assessment.recommended_action}
+    Enhanced Due Diligence Required: {risk_assessment.enhanced_due_diligence_required}
+    Enhanced Due Diligence Completed: {risk_assessment.enhanced_due_diligence_completed}
     """
 
     compliance_summary = f"""
