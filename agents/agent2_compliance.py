@@ -64,8 +64,8 @@ def create_regulatory_vector_store(chunks):
 
     """
     Working Logic: vector_store.get() retrieves everything currently stored in this collection if it's the very first time running Agent 2, 
-    the collection is empty, so existing['ids'] is an empty list [], and len() == 0 is True → embeds the documents.
-    On every subsequent run, the collection already has data, existing['ids'] has entries, len() > 0 → skips re-embedding.
+    the collection is empty, so existing['ids'] is an empty list [], and len() == 0 is True -> embeds the documents.
+    On every subsequent run, the collection already has data, existing['ids'] has entries, len() > 0 -> skips re-embedding.
     """
 
     existing = vector_store.get()
@@ -80,7 +80,7 @@ def create_regulatory_vector_store(chunks):
 
 def create_retriever(vector_store):
     
-    retriever = vector_store.as_retriever(   #.as_retriever() is a method that converts your vector_store (the Chroma database object) into a proper Retriever object - which is a Runnable, meaning it can be used with .invoke() and chained with |.
+    retriever = vector_store.as_retriever(   #.as_retriever() is a method that converts vector_store (the Chroma database object) into a proper Retriever object - which is a Runnable, meaning it can be used with .invoke() and chained with |.
         search_type="similarity",
         search_kwargs={"k": 6}
     )
@@ -476,18 +476,6 @@ def run_agent2(risk_assessment: RiskAssessment) -> ComplianceStatus:
 
     return compliance_status
 
-'''
-
-if __name__ == "__main__":
-    from agents.agent1_risk import run_agent1
-
-    FILE_PATH = os.path.join(BASE_DIR, 'data', 'CASE-2026-301.pdf')
-    risk_assessment = run_agent1(FILE_PATH)
-    compliance_status = run_agent2(risk_assessment)
-    print(compliance_status.case_id)
-    print(compliance_status)
-
-'''
 
 if __name__ == "__main__":
     from agents.agent1_risk import run_agent1

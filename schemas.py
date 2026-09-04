@@ -4,7 +4,7 @@ from pydantic import BaseModel, Field, model_validator # model_validator, the de
 
 class PreviousAddress(BaseModel):
     address: str = Field(description="The previous address")
-    residency_score: str = Field(description="Confidence level the subject lived here, e.g. High, Medium, Low")
+    residency_score: str = Field(description="Confidence level the subject lived here, e.g. High, Medium, Low")     # LLM's own assessment of confidence in that address
     sources_count: int = Field(description="Number of data sources confirming this address")
     occupied_period: str = Field(description="Date range this address was occupied, e.g. '2018 - 2026'")
     forwarding_confirmed: Optional[bool] = Field(default=None, description="Whether a forwarding address link was confirmed to the next address, if applicable")
@@ -37,7 +37,7 @@ class AdverseMediaArticle(BaseModel):
 
 
 class ScreeningEvidence(BaseModel):
-    source_list: str = Field(description="Which specific list/database this match came from, e.g. 'WorldCompliance PEP Database', 'OFAC SDN List'")
+    source_list: str = Field(description="Which specific list/database this match came from, e.g. 'WorldCompliance PEP Database', 'OFAC SDN List'")  # WorldCompliance PEP Database: specific database used to screen for Politically Exposed Persons (PEPs),  # OFAC: Office of Foreign Assets Control, a U.S. Treasury Department agency that enforces economic sanctions against countries, entities, and individuals, # SDN: Specially Designated Nationals, OFAC's actual list of specific people/entities that are sanctioned. 
     match_record: str = Field(description="The specific record details that matched, e.g. name, DOB, category as it appears on the source list")
     match_basis: str = Field(description="Why this was considered a match, e.g. 'Exact name and date of birth match'")
 
@@ -50,7 +50,7 @@ class TraceIQFindings(BaseModel):
 
     # Current Address Profile
     current_address: str = Field(description="The subject's current address on file")
-    residency_score: Literal["Not Calculated", "Very Low", "Low", "Medium", "High", "Very High"] = Field(description="Confidence level the subject genuinely lives at the current address")
+    residency_score: Literal["Not Calculated", "Very Low", "Low", "Medium", "High", "Very High"] = Field(description="Confidence level the subject genuinely lives at the current address")  # LLM's own assessment
     last_seen: Optional[str] = Field(default=None, description="Most recent date confirming this address")
     sources_count: int = Field(description="Number of data sources backing the current address")
     source_records: List[str] = Field(default_factory=list, description="List of specific source records confirming the current address, e.g. 'Registry Trust: Electoral roll entry confirmed 2019-present'")
@@ -72,6 +72,19 @@ class TraceIQFindings(BaseModel):
     ccj_records: List[CCJRecord] = Field(default_factory=list, description="List of County Court Judgments found, each with court, date, and amount")
     has_bankruptcy_iva_dro: bool = Field(description="Whether any bankruptcy, IVA, or Debt Relief Order was found")
     directorships: List[Directorship] = Field(default_factory=list, description="Company directorships associated with this identity")
+
+    """
+    # IVA (Individual Voluntary Arrangement): a formal agreement in the UK where someone struggling with debt agrees to pay creditors a set amount over time (usually 5-6 years), 
+      avoiding bankruptcy while still settling debts.
+    
+      
+    # DRO ((Debt Relief Order)): a way for someone genuinely too poor to pay their debts to have those debts legally cancelled/written off - specifically for people with very low income, few assets, and 
+     relatively small debt (under a set limit). After a 12-month waiting period, if their situation hasn't improved, the debt is officially erased, and they're no longer legally required to pay it.
+
+
+    # Bankruptcy: a formal legal process where someone who cannot pay their debts declares this to the court, and in exchange, most of their debts are legally written off - but usually at a bigger cost than
+      an IVA or DRO (e.g., losing valuable assets like a house or car, and having finances controlled by an official "trustee" for a period, typically 12 months).
+    """
 
     # Linked Associated Individuals
     associated_individuals_note: Optional[str] = Field(default=None, description="Summary note on associated individuals and whether connections are established or unexplained")
@@ -131,10 +144,10 @@ class RiskAssessment(BaseModel):
 
     # PEP and Sanctions screening (Bridger Insight XG)
     pep_match: bool = Field(description="True if a Politically Exposed Person (PEP) match was identified for this case, False otherwise")
-    pep_confidence: Optional[float] = Field(default=None, description="Confidence score 0-100 for PEP match, if applicable") # High confidence (e.g., 92%) → very likely this really is a PEP/sanctioned person → treat seriously,   Low confidence (e.g., 58%) → could genuinely be them, or could be a coincidental name match → needs more verification before acting on it
+    pep_confidence: Optional[float] = Field(default=None, description="Confidence score 0-100 for PEP match, if applicable") # High confidence (e.g., 92%) → very likely this really is a PEP/sanctioned person -> treat seriously,   Low confidence (e.g., 58%) -> could genuinely be them, or could be a coincidental name match -> needs more verification before acting on it [LLM-derived, but grounded in real data.]
     pep_evidence: Optional[ScreeningEvidence] = Field(default=None, description="Source list, matched record, and match basis for the PEP match, if applicable")
     sanctions_match: bool = Field(description="True if a sanctions list match was identified, False otherwise")
-    sanctions_confidence: Optional[float] = Field(default=None, description="Confidence score 0-100 for sanctions match, if applicable")
+    sanctions_confidence: Optional[float] = Field(default=None, description="Confidence score 0-100 for sanctions match, if applicable")  # LLM-derived, grounded in stated evidence (e.g., "exact match" vs. "close name match, transliteration variant")
     sanctions_evidence: Optional[ScreeningEvidence] = Field(default=None, description="Source list, matched record, and match basis for the sanctions match, if applicable")
     adverse_media_count: int = Field(description="Total number of adverse media articles found")
     adverse_media_articles: List[AdverseMediaArticle] = Field(default_factory=list, description="List of adverse media articles found, each with a description and evidence source")
@@ -143,15 +156,15 @@ class RiskAssessment(BaseModel):
     # Due diligence and human review flags
     confidence_score: float = Field(description="Overall confidence score 0-100 in this risk assessment") # LLM extracts from data. The LLM's own stated certainty in its assessment (this is a field the LLM fills in itself, not calculated by code, and not literally printed in the case PDF, it's the LLM's self-assessment of how sure it is, basically the LLM saying "how sure am I that my analysis of this case is correct?
     confidence_level: Literal["LOW", "MEDIUM", "HIGH"] = Field(description="Confidence level of assessment") # LLM extracts/derives. Same as above - LLM's own label (LOW/MEDIUM/HIGH) for its confidence, alongside the numeric version.
-    requires_human_review: bool = Field(description="Whether human review is required") # CODE calculates. Not from the LLM, not from the raw data - routing function computes this
-    enhanced_due_diligence_required: bool = Field(description="Whether enhanced due diligence is required for this case") # CODE calculates. Routing function computes this.
-    enhanced_due_diligence_completed: Optional[bool] = Field(default=None, description="Whether EDD was completed - None if not yet tracked by this system, requires human analyst confirmation")
+    requires_human_review: bool = Field(description="Whether human review is required") # CODE calculates. Not from the LLM, not from the raw data - routing function computes this (based on confidence_score)
+    enhanced_due_diligence_required: bool = Field(description="Whether enhanced due diligence is required for this case") # CODE calculates. Routing function computes this (based on risk_score and pep_match)
+    enhanced_due_diligence_completed: Optional[bool] = Field(default=None, description="Whether EDD was completed - None if not yet tracked by this system, requires human analyst confirmation")   # From terminal
     # TraceIQ integration + audit fields
     trace_iq: TraceIQFindings = Field(description="Structured findings from TraceIQ identity tracing")  # LLM reads the raw TraceIQ section of the case text and extracts/structures it into the TraceIQFindings object
     detailed_analysis: str = Field(description="Full detailed explanation of each risk signal identified, written as connected paragraphs") # The LLM writes original explanatory prose connecting all the risk signals together
     recommended_action: str = Field(description="Recommended action for the analyst")  # the LLM makes a judgment call, recommending an action based on its analysis of the case
     next_steps: List[str] = Field(description="Suggested next steps") # LLM generates its own suggested next steps based on its analysis, not something extracted from the raw case text
-    regulatory_considerations: List[str] = Field(description="Relevant regulatory considerations (ungrounded, LLM's own assessment)") # # Ungrounded = LLM's own guess from memory, not backed by retrieved documents
+    regulatory_considerations: List[str] = Field(description="Relevant regulatory considerations (ungrounded, LLM's own assessment)") # Ungrounded = LLM's own guess from memory, not backed by retrieved documents
 
 
     @model_validator(mode='before')
@@ -177,9 +190,6 @@ class ComplianceStatus(BaseModel):
     gdpr_compliant: bool = Field(description="whether case meets GDPR requirements")
     fca_compliant: bool = Field(description="whether case meets FCA requirements")
     aml_kyc_compliant: Literal["Compliant", "Non-Compliant", "Pending Verification"] = Field(description="AML/KYC compliance status - Pending Verification when EDD completion status is not yet confirmed")
-    # aml_kyc_compliant: bool = Field(description="whether case meets AML/KYC requirements")
-
-    # additional_safeguards_required: bool = Field(description="True if any additional safeguards are still outstanding/not yet completed for this case")
 
     mortality_confirmed_block: bool = Field(description="True if a CONFIRMED mortality match was found (subject is deceased). When True, this forces all compliance fields to False and the case must be automatically rejected, regardless of any other findings.")
     # If the real person is confirmed dead, whoever is applying is definitely not them - this is fraud.

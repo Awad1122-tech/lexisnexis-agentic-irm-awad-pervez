@@ -110,6 +110,8 @@ def create_prompt():
 
     return report_prompt.partial(format_instructions=format_instructions)
 
+# -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 """
 Agent 3 writes the report before we know the FINAL FCA verdict. Later, that verdict gets corrected. This function goes back and fixes just the FCA part of the report so it matches the correction.
 
@@ -175,6 +177,7 @@ def run_report_revision(executive_summary: str, decision_rationale: str, fca_com
 
     return revised_summary, revised_rationale
 
+# -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 def run_report_generation(risk_assessment: RiskAssessment, compliance_status: ComplianceStatus) -> ReportSynthesis:
 

@@ -19,7 +19,7 @@ FILE_PATH = os.path.join(BASE_DIR, 'data', 'CASE-2026-301.pdf')
 ## Step 1 of RAG Pipeline: Load the data/ document
 def load_case_data(file_path: str):
     loader = PyPDFLoader(file_path)
-    docs = loader.load()
+    docs = loader.load()                 # load() reads the actual PDF file from disk and converts it into a list of Document objects
     return docs
 
 ## Step 2 of RAG Pipeline: Text Chunking (split loaded document into smaller chunks for embedding)
@@ -38,7 +38,7 @@ def split_documents(docs):
     """
 
     splitter = RecursiveCharacterTextSplitter(
-        chunk_size = 800,
+        chunk_size = 800,                               # characters including (letters, numbers, spaces, punctuation all counted)
         chunk_overlap = 100
     )
 
@@ -62,7 +62,7 @@ def get_case_id(docs) -> str:
 # Purpose of get_case_id():
 
 """
-It reliably extract the real case ID directly from the PDF's text, nstead of relying on the LLM to correctly report it later.
+It reliably extract the real case ID directly from the PDF's text, instead of relying on the LLM to correctly report it later.
 
 Why we are using this here:
 
@@ -70,6 +70,16 @@ Why we are using this here:
 
 2) Used to override the LLM's own guess - the LLM might slightly misspell or reformat the case ID when it generates its structured output. 
    By extracting it directly from the PDF with plain code, you get a guaranteed accurate value
+
+"""
+
+
+
+"""
+    Creates a unique fingerprint (MD5 hash) of the case's actual text content.
+    Used to detect if a PDF's content changed since it was last embedded -
+    if the hash differs from what's stored, create_vector_store() knows to
+    refresh the stale embedding instead of keeping outdated data in ChromaDB.
 
 """
 
@@ -134,15 +144,11 @@ def create_vector_store(chunks, case_id: str, content_hash: str):
 
 
 
-
- # vector_store.add_documents(chunks) = embed (using embedding_model) + store (into ChromaDB), both happening together, in that exact order, within this single line.
-
-
 ## Step 4 of RAG Pipeline: Creating retriever to search ChromaDB based similarity
 
 def create_retriever(vector_store, case_id: str):
 
-    retriever = vector_store .as_retriever(      # .as_retriever() is a method that converts your vector_store (the Chroma database object) into a proper Retriever object - which is a Runnable, meaning it can be used with .invoke() and chained with |.
+    retriever = vector_store .as_retriever(      # .as_retriever() is a method that converts vector_store (the Chroma database object) into a proper Retriever object - which is a Runnable, meaning it can be used with .invoke() and chained with |.
         search_type = "similarity",
         search_kwargs = {
             "k" : 12,
@@ -173,7 +179,7 @@ def create_prompt():
 
     # .from_messages() is a method of the ChatPromptTemplate class used to construct/create a ChatPromptTemplate object from a list of role-based messages.
 
-    risk_prompt = ChatPromptTemplate.from_messages([
+    risk_prompt = ChatPromptTemplate.from_messages([                                               # Also ChatPromptTemplate is a runnable
         ("system", """ You are an expert identity risk analyst at LexisNexis Risk Solution. 
          You analyse identity verification, fraud screening, and identity tracing data from
          LexisNexis products: ThreatMetrix, IDU / Instant Verify International, TrueID, TraceIQ, and Bridger Insight XG.
