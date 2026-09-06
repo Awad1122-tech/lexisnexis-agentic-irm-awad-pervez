@@ -1,1 +1,162 @@
-# Confirmation page
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Decision Recorded — {{ case_id }}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            padding: 40px;
+            width: 100%;
+            max-width: 480px;
+            text-align: center;
+        }
+
+        .header .logo-text {
+            font-size: 13px;
+            font-weight: 700;
+            color: #e8500a;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        .header .system-name {
+            font-size: 11px;
+            color: #888;
+            margin-bottom: 30px;
+        }
+
+        .icon {
+            font-size: 56px;
+            margin-bottom: 16px;
+        }
+
+        h1 {
+            font-size: 22px;
+            color: #1a1a2e;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .subtitle {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 24px;
+            line-height: 1.6;
+        }
+
+        .decision-summary {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 24px;
+            text-align: left;
+        }
+
+        .decision-summary p {
+            font-size: 13px;
+            color: #555;
+            margin-bottom: 6px;
+        }
+
+        .decision-summary p:last-child {
+            margin-bottom: 0;
+        }
+
+        .decision-summary strong {
+            color: #1a1a2e;
+        }
+
+        .decision-value {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .decision-yes { background: #d4edda; color: #155724; }
+        .decision-no { background: #f8d7da; color: #721c24; }
+        .decision-skip { background: #e2e3e5; color: #383d41; }
+        .decision-acknowledged { background: #cce5ff; color: #004085; }
+
+        .notice {
+            font-size: 12px;
+            color: #aaa;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+
+        <div class="header">
+            <div class="logo-text">LexisNexis Risk Solutions</div>
+            <div class="system-name">Agentic Identity Risk Management System</div>
+        </div>
+
+        <!-- Icon changes based on decision -->
+        {% if decision == 'yes' or decision == 'acknowledged' %}
+            <div class="icon">✅</div>
+        {% elif decision == 'no' %}
+            <div class="icon">❌</div>
+        {% else %}
+            <div class="icon">❓</div>
+        {% endif %}
+
+        <h1>Decision Recorded</h1>
+
+        <p class="subtitle">
+            Thank you. Your response has been recorded and the pipeline
+            has been notified to continue processing.
+        </p>
+
+        <!-- Decision summary box -->
+        <div class="decision-summary">
+            <p><strong>Case ID:</strong> {{ case_id }}</p>
+            <p><strong>Action Type:</strong>
+                {% if review_type == 'edd' %}
+                    EDD Confirmation
+                {% else %}
+                    Human Review Acknowledgement
+                {% endif %}
+            </p>
+            <p><strong>Your Decision:</strong>
+                {% if decision == 'yes' %}
+                    <span class="decision-value decision-yes">EDD Confirmed Complete</span>
+                {% elif decision == 'no' %}
+                    <span class="decision-value decision-no">EDD Not Complete</span>
+                {% elif decision == 'skip' %}
+                    <span class="decision-value decision-skip">Unknown / Cannot Confirm</span>
+                {% elif decision == 'acknowledged' %}
+                    <span class="decision-value decision-acknowledged">Case Reviewed & Acknowledged</span>
+                {% endif %}
+            </p>
+        </div>
+
+        <p class="notice">
+            This link is now inactive and cannot be used again.<br>
+            You may safely close this browser tab.
+        </p>
+
+    </div>
+</body>
+</html>

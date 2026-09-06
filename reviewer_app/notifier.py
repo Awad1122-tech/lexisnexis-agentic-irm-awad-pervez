@@ -293,3 +293,94 @@ This is an automated notification. Do not reply to this email.
         except Exception as e:
             print(f"[NOTIFIER] Failed to send human review notification: {e}")
             return False
+
+
+
+'''
+
+generate_token() - creates a secure random URL token (impossible to guess)
+generate_pin() - creates a random 6-digit PIN
+send_edd_notification() - sends 2 separate emails: link in Email 1, PIN in Email 2
+send_human_review_notification() - same two-email approach for human review cases
+
+'''
+
+
+def send_senior_analyst_report(case_id: str,
+                                customer_name: str,
+                                overall_risk_rating: str,
+                                pdf_filepath: str) -> bool:
+    """
+    Sends the final PDF report to the Senior Analyst by email.
+    The PDF is attached directly to the email.
+    The email body is brief — all details are in the PDF.
+
+    Args:
+        case_id: The unique case identifier
+        customer_name: The customer's full name
+        overall_risk_rating: The final overall risk rating (LOW/MEDIUM/HIGH etc.)
+        pdf_filepath: The full file path of the generated PDF report
+
+    Returns:
+        True if email sent successfully, False if it failed
+    """
+
+    app, mail = create_mail_app()
+    senior_analyst_email = os.getenv('SENIOR_ANALYST_EMAIL')
+
+    subject = f"[IDENTITY RISK REPORT] {case_id} — {overall_risk_rating} Risk — Action Required"
+
+    body = f"""
+Dear Senior Analyst,
+
+A new identity risk assessment report has been generated and requires your review and final decision.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Case ID       : {case_id}
+Customer      : {customer_name}
+Risk Rating   : {overall_risk_rating}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Please find the complete Identity Risk Assessment Report attached to this email.
+
+The report contains:
+  - Executive Summary and Decision Rationale
+  - Compliance Status (GDPR, FCA, AML/KYC)
+  - Full Risk Assessment Details
+  - Regulatory Actions Required
+  - Audit Trail Reference
+
+Please review the report and record your decision (Approve / Reject / Escalate)
+on the decision box on Page 1 of the attached PDF.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+LexisNexis Agentic Identity Risk Management System
+This is an automated notification. Do not reply to this email.
+CONFIDENTIAL — FOR SENIOR ANALYST USE ONLY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+"""
+
+    with app.app_context():
+        try:
+            msg = Message(
+                subject=subject,
+                recipients=[senior_analyst_email],
+                body=body
+            )
+
+            # Attach the PDF report
+            with open(pdf_filepath, 'rb') as pdf_file:
+                msg.attach(
+                    filename=os.path.basename(pdf_filepath),  # just the filename, not full path
+                    content_type='application/pdf',
+                    data=pdf_file.read()
+                )
+
+            mail.send(msg)
+            print(f"[NOTIFIER] Report emailed to Senior Analyst "
+                  f"({senior_analyst_email}) for {case_id}")
+            return True
+
+        except Exception as e:
+            print(f"[NOTIFIER] Failed to send report to Senior Analyst: {e}")
+            return False

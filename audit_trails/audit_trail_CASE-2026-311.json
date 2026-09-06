@@ -1,6 +1,6 @@
 [
   {
-    "timestamp": "2026-08-30T18:48:49.021402",
+    "timestamp": "2026-09-06T15:27:18.952667",
     "case_id": "CASE-2026-311",
     "step": "Agent 1 - Risk Analysis",
     "action": "Completed risk assessment",
@@ -11,7 +11,18 @@
     }
   },
   {
-    "timestamp": "2026-08-30T18:48:49.022404",
+    "timestamp": "2026-09-06T15:30:23.974799",
+    "case_id": "CASE-2026-311",
+    "step": "Routing Logic - Human Review",
+    "action": "Human review completed by reviewer",
+    "details": {
+      "decision": "acknowledged",
+      "confidence_score": 60.0,
+      "gdpr_article_22c": "Reviewer acknowledged"
+    }
+  },
+  {
+    "timestamp": "2026-09-06T15:30:23.974799",
     "case_id": "CASE-2026-311",
     "step": "Routing Logic",
     "action": "Applied deterministic overrides (GDPR Article 22C; AML/KYC Reg. 33 & 35)",
@@ -21,39 +32,38 @@
     }
   },
   {
-    "timestamp": "2026-08-30T18:49:02.046983",
+    "timestamp": "2026-09-06T15:30:35.830167",
     "case_id": "CASE-2026-311",
     "step": "Agent 2 - Compliance",
     "action": "Completed compliance check",
     "details": {
       "gdpr_compliant": true,
-      "fca_compliant": false,
+      "fca_compliant": true,
       "aml_kyc_compliant": "Non-Compliant",
       "mortality_confirmed_block": false
     }
   },
   {
-    "timestamp": "2026-08-30T18:49:06.251617",
+    "timestamp": "2026-09-06T15:30:39.733127",
     "case_id": "CASE-2026-311",
     "step": "Agent 3 - Report Generation",
     "action": "Completed final report synthesis",
     "details": {
-      "decision_rationale": "The risk assessment indicates a medium risk rating due to the lack of information available on the subject, with no records found for the subject's name, address, date of birth, and phone number. However, the document authentication result is a pass with a score of 95/100, and the facial match score is 93/100. The compliance status shows that the case is GDPR compliant because a human is reviewing the case, with a Confidence Score of 60.0 compared against the threshold of 70. The FCA non-compliance is due to insufficient detailed analysis to fully satisfy FCA consumer protection principles. The AML/KYC non-compliance is a result of insufficient identity verification, leading to non-compliance with basic customer due diligence. Enhanced Due Diligence is not required for this case, as the risk score did not exceed 75 and no PEP match was found. The recommended action is to conduct further review to verify the subject's identity and assess the risk.",
+      "decision_rationale": "The risk assessment shows that Amara Osei has no prior UK residency or credit history on file, and the identity verification result is insufficient due to no records found for name, address, date of birth, and phone in credit reference and telecoms directory records. However, the document authentication result is pass with a score of 95/100, and the facial match score is 93/100. The compliance findings indicate that the case is GDPR compliant because a human is reviewing the case, and the Confidence Score of 60.0 compared against the threshold of 70 is noted. The case is FCA compliant as the detailed analysis provides sufficient information to satisfy FCA principles. However, the case is AML/KYC non-compliant due to insufficient identity verification. Enhanced Due Diligence is not required for this case, as the risk score did not exceed 75 and no PEP match was found. The combination of these risk signals and compliance findings supports the final recommendation to conduct further investigation to verify the subject's identity and assess the risk.",
       "final_recommendations": [
-        "Conduct further review to verify the subject's identity and assess the risk",
-        "Enhance detailed analysis to better align with consumer protection principles, ensuring honesty, fair, and open dealing with retail consumers",
-        "Repeat identity verification or re-verify customer identity through alternative means to satisfy basic customer due diligence requirements"
+        "Conduct further investigation to verify the subject's identity and assess the risk",
+        "Repeat identity verification or re-verify customer identity through alternative means to satisfy Regulation 28"
       ]
     }
   },
   {
-    "timestamp": "2026-08-30T18:49:15.312577",
+    "timestamp": "2026-09-06T15:30:51.354363",
     "case_id": "CASE-2026-311",
     "step": "FCA Final Check",
     "action": "Completed post-synthesis FCA re-evaluation",
     "details": {
       "fca_compliant_final": false,
-      "reason": "The Decision Rationale mentions FCA non-compliance due to insufficient detailed analysis, and the Audit Trail Summary lacks explicit evidence of senior management accountability, as required by the SM&CR and Consumer Duty principles (PRIN 2A.2.2R)."
+      "reason": "The decision rationale and audit trail do not provide sufficient evidence that the firm has considered the Consumer Duty principle of acting in good faith and meeting the information needs of retail consumers, as required by PRIN 2A.2.2R and the Consumer Duty."
     }
   }
 ]

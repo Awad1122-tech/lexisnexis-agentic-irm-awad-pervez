@@ -131,25 +131,45 @@ def create_report_revision_prompt():
 
         {decision_rationale}
 
+        Here are the current final recommendations:
+
+        {final_recommendations}
+
+        Here are the current final next steps:
+
+        {final_next_steps}
+
         The FINAL, confirmed FCA compliance status is: {fca_compliant_final}
         Reason: {fca_reason}
 
-        Rewrite BOTH the executive summary and decision rationale so that any
-        statement about FCA compliance accurately reflects this FINAL status -
-        correct any contradictory or outdated FCA-related statements in
-        EITHER section. Keep all other content (risk findings, GDPR, AML/KYC
-        discussion) exactly as it is.
+        Rewrite ALL FOUR sections so that any statement about FCA compliance
+        accurately reflects this FINAL status - correct any contradictory or
+        outdated FCA-related statements in ANY section. Specifically:
+        - If fca_compliant_final is True: REMOVE any recommendation or next
+          step suggesting FCA remediation (e.g. "provide more detailed
+          analysis for FCA", "improve FCA explainability") - these are
+          incorrect if FCA is compliant.
+        - If fca_compliant_final is False: ENSURE recommendations include
+          appropriate FCA remediation steps.
+        - Keep all other content (risk findings, GDPR, AML/KYC) exactly
+          as it is.
 
         Return your response in EXACTLY this format, nothing else:
         EXECUTIVE_SUMMARY: [revised executive summary here]
-        DECISION_RATIONALE: [revised decision rationale here]""")
+        DECISION_RATIONALE: [revised decision rationale here]
+        FINAL_RECOMMENDATIONS: [revised final recommendations here, as a
+        bullet list with each item on a new line starting with "- "]
+        FINAL_NEXT_STEPS: [revised final next steps here, as a bullet list
+        with each item on a new line starting with "- "]""")
     ])
     return prompt
 
 
 # Actually calls the LLM to do the rewrite described above
 
-def run_report_revision(executive_summary: str, decision_rationale: str, fca_compliant_final: bool, fca_reason: str):
+def run_report_revision(executive_summary: str, decision_rationale: str,
+                        final_recommendations: list, final_next_steps: list,
+                        fca_compliant_final: bool, fca_reason: str):
 
     llm = HuggingFaceEndpoint(
         repo_id="meta-llama/Llama-3.3-70B-Instruct",
@@ -163,19 +183,42 @@ def run_report_revision(executive_summary: str, decision_rationale: str, fca_com
 
     chain = prompt | model
 
+    # Convert lists to bullet format for the prompt
+    recommendations_text = "\n".join(f"- {r}" for r in final_recommendations)
+    next_steps_text = "\n".join(f"- {s}" for s in final_next_steps)
+
     result = chain.invoke({                                  # result is an AIMessage - we only need its .content (the plain revised text)
         "executive_summary": executive_summary,
         "decision_rationale": decision_rationale,
+        "final_recommendations": recommendations_text,
+        "final_next_steps": next_steps_text,
         "fca_compliant_final": fca_compliant_final,
         "fca_reason": fca_reason
     })
 
-    # Parse the specific format the LLM was asked to return
+    # Parse the 4-section format the LLM was asked to return
     text = result.content
-    revised_summary = text.split("EXECUTIVE_SUMMARY:")[1].split("DECISION_RATIONALE:")[0].strip()
-    revised_rationale = text.split("DECISION_RATIONALE:")[1].strip()
 
-    return revised_summary, revised_rationale
+    revised_summary = text.split("EXECUTIVE_SUMMARY:")[1].split("DECISION_RATIONALE:")[0].strip()
+    revised_rationale = text.split("DECISION_RATIONALE:")[1].split("FINAL_RECOMMENDATIONS:")[0].strip()
+    revised_recommendations_text = text.split("FINAL_RECOMMENDATIONS:")[1].split("FINAL_NEXT_STEPS:")[0].strip()
+    revised_next_steps_text = text.split("FINAL_NEXT_STEPS:")[1].strip()
+
+
+    # Convert bullet text back to lists
+    revised_recommendations = [
+        line.lstrip("- ").strip()
+        for line in revised_recommendations_text.split("\n")
+        if line.strip() and line.strip() != "-"
+    ]
+
+    revised_next_steps = [
+        line.lstrip("- ").strip()
+        for line in revised_next_steps_text.split("\n")
+        if line.strip() and line.strip() != "-"
+    ]
+
+    return revised_summary, revised_rationale, revised_recommendations, revised_next_steps
 
 # -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 

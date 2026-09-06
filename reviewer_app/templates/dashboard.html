@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Case Review — {{ review.case_id }}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            padding: 20px;
+            color: #1a1a2e;
+        }
+
+        /* --------------------------------------------------------
+           Page header
+        -------------------------------------------------------- */
+        .page-header {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            padding: 20px 30px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .page-header .branding .logo-text {
+            font-size: 14px;
+            font-weight: 700;
+            color: #e8500a;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .page-header .branding .system-name {
+            font-size: 11px;
+            color: #888;
+        }
+
+        .page-header .case-badge {
+            text-align: right;
+        }
+
+        .page-header .case-badge .case-id {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1a1a2e;
+        }
+
+        .page-header .case-badge .customer-name {
+            font-size: 13px;
+            color: #666;
+        }
+
+        /* --------------------------------------------------------
+           Action required banner
+        -------------------------------------------------------- */
+        .action-banner {
+            border-radius: 10px;
+            padding: 16px 24px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .action-banner.edd {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            color: #856404;
+        }
+
+        .action-banner.human {
+            background: #cce5ff;
+            border: 1px solid #004085;
+            color: #004085;
+        }
+
+        /* --------------------------------------------------------
+           Section cards
+        -------------------------------------------------------- */
+        .section-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            padding: 24px 30px;
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: #e8500a;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #f0f2f5;
+        }
+
+        /* --------------------------------------------------------
+           Data grid — two columns
+        -------------------------------------------------------- */
+        .data-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .data-item {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .data-item .label {
+            font-size: 11px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        .data-item .value {
+            font-size: 14px;
+            color: #1a1a2e;
+            font-weight: 500;
+        }
+
+        /* --------------------------------------------------------
+           Risk rating badge
+        -------------------------------------------------------- */
+        .risk-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .risk-low { background: #d4edda; color: #155724; }
+        .risk-medium { background: #fff3cd; color: #856404; }
+        .risk-medium-high { background: #ffe5d0; color: #7d3c00; }
+        .risk-high { background: #f8d7da; color: #721c24; }
+
+        /* --------------------------------------------------------
+           Pass / Fail badges
+        -------------------------------------------------------- */
+        .pass { color: #155724; font-weight: 600; }
+        .fail { color: #721c24; font-weight: 600; }
+        .pending { color: #856404; font-weight: 600; }
+
+        /* --------------------------------------------------------
+           Key signals list
+        -------------------------------------------------------- */
+        .signals-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .signals-list li {
+            font-size: 13px;
+            color: #333;
+            padding: 8px 12px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            border-left: 3px solid #e8500a;
+        }
+
+        /* --------------------------------------------------------
+           PEP / Sanctions evidence box
+        -------------------------------------------------------- */
+        .evidence-box {
+            background: #fff8f5;
+            border: 1px solid #f5c6a0;
+            border-radius: 8px;
+            padding: 14px;
+            margin-top: 12px;
+        }
+
+        .evidence-box p {
+            font-size: 13px;
+            color: #555;
+            margin-bottom: 6px;
+            line-height: 1.5;
+        }
+
+        .evidence-box p:last-child {
+            margin-bottom: 0;
+        }
+
+        .evidence-box strong {
+            color: #1a1a2e;
+        }
+
+        /* --------------------------------------------------------
+           Detailed analysis text area
+        -------------------------------------------------------- */
+        .analysis-text {
+            font-size: 13px;
+            color: #444;
+            line-height: 1.7;
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 16px;
+        }
+
+        /* --------------------------------------------------------
+           Adverse media articles
+        -------------------------------------------------------- */
+        .media-article {
+            background: #fff8f5;
+            border: 1px solid #f5c6a0;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 8px;
+            font-size: 13px;
+            color: #555;
+        }
+
+        /* --------------------------------------------------------
+           Decision panel — the action buttons at the bottom
+        -------------------------------------------------------- */
+        .decision-panel {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            padding: 30px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .decision-panel h2 {
+            font-size: 18px;
+            color: #1a1a2e;
+            margin-bottom: 8px;
+        }
+
+        .decision-panel p {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 24px;
+        }
+
+        .decision-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        /* --------------------------------------------------------
+           Decision buttons
+        -------------------------------------------------------- */
+        .btn {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            letter-spacing: 0.3px;
+            min-width: 160px;
+        }
+
+        .btn-confirm {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-confirm:hover {
+            background: #1e7e34;
+        }
+
+        .btn-not-complete {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-not-complete:hover {
+            background: #bd2130;
+        }
+
+        .btn-unknown {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-unknown:hover {
+            background: #545b62;
+        }
+
+        .btn-acknowledge {
+            background: #007bff;
+            color: white;
+            min-width: 260px;
+        }
+
+        .btn-acknowledge:hover {
+            background: #0056b3;
+        }
+
+        /* --------------------------------------------------------
+           Footer
+        -------------------------------------------------------- */
+        .footer {
+            text-align: center;
+            font-size: 11px;
+            color: #aaa;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ============================================================
+         PAGE HEADER
+    ============================================================ -->
+    <div class="page-header">
+        <div class="branding">
+            <div class="logo-text">LexisNexis Risk Solutions</div>
+            <div class="system-name">Agentic Identity Risk Management System</div>
+        </div>
+        <div class="case-badge">
+            <div class="case-id">{{ review.case_id }}</div>
+            <div class="customer-name">{{ risk_assessment.customer_name }}</div>
+        </div>
+    </div>
+
+    <!-- ============================================================
+         ACTION REQUIRED BANNER
+    ============================================================ -->
+    {% if review.review_type == 'edd' %}
+    <div class="action-banner edd">
+        ⚠️ ACTION REQUIRED: Please review the case details below and
+        confirm the Enhanced Due Diligence (EDD) completion status.
+    </div>
+    {% else %}
+    <div class="action-banner human">
+        👤 ACTION REQUIRED: Please review the case details below and
+        acknowledge that you have completed your human review of this case
+        (GDPR Article 22C).
+    </div>
+    {% endif %}
+
+    <!-- ============================================================
+         SECTION 1: CASE OVERVIEW
+    ============================================================ -->
+    <div class="section-card">
+        <div class="section-title">📋 Case Overview</div>
+        <div class="data-grid">
+
+            <div class="data-item">
+                <span class="label">Case ID</span>
+                <span class="value">{{ risk_assessment.case_id }}</span>
+            </div>
+
+            <div class="data-item">
+                <span class="label">Customer Name</span>
+                <span class="value">{{ risk_assessment.customer_name }}</span>
+            </div>
+
+            <div class="data-item">
+                <span class="label">Overall Risk Rating</span>
+                <span class="value">
+                    {% set rating = risk_assessment.overall_risk_rating %}
+                    {% if rating == 'LOW' %}
+                        <span class="risk-badge risk-low">{{ rating }}</span>
+                    {% elif rating == 'MEDIUM' %}
+                        <span class="risk-badge risk-medium">{{ rating }}</span>
+                    {% elif rating == 'MEDIUM-HIGH' %}
+                        <span class="risk-badge risk-medium-high">{{ rating }}</span>
+                    {% else %}
+                        <span class="risk-badge risk-high">{{ rating }}</span>
+                    {% endif %}
+                </span>
+            </div>
+
+            <div class="data-item">
+                <span class="label">Risk Score</span>
+                <span class="value">{{ risk_assessment.risk_score }}</span>
+            </div>
+
+            <div class="data-item">
+                <span class="label">Trust Score</span>
+                <span class="value">{{ risk_assessment.trust_score }}</span>
+            </div>
+
+            <div class="data-item">
+                <span class="label">Confidence Score</span>
+                <span class="value">
+                    {{ risk_assessment.confidence_score }}
+                    ({{ risk_assessment.confidence_level }})
+                </span>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ============================================================
+         SECTION 2: KEY RISK SIGNALS
+    ============================================================ -->
+    <div class="section-card">
+        <div class="section-title">⚡ Key Risk Signals</div>
+        <ul class="signals-list">
+            {% for signal in risk_assessment.key_signals %}
+            <li>{{ signal }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <!-- ============================================================
+         SECTION 3: IDENTITY & DOCUMENT VERIFICATION
+    ============================================================ -->
+    <div class="section-card">
+        <div class="section-title">🪪 Identity & Document Verification</div>
+        <div class="data-grid">
+
+            <div class="data-item">
+                <span class="label">Identity Verification</span>
+                <span class="value
+                    {% if risk_assessment.identity_verification_result == 'PASS' %}
+                        pass
+                    {% else %}
+                        fail
+                    {% endif %}">
+                    {{ risk_assessment.identity_verification_result }}
+                </span>
+            </div>
+
+            <div class="data-item">
+                <span class="label">Document Type</span>
+                <span class="value">{{ risk_assessment.document_type }}</span>
+            </div>
+
+            <div class="data-item">
+                <span class="label">Document Authentication</span>
+                <span class="value
+                    {% if risk_assessment.document_authentication_result == 'Pass' %}
+                        pass
+                    {% else %}
+                        fail
+                    {% endif %}">
+                    {{ risk_assessment.document_authentication_result }}
+                    ({{ risk_assessment.document_authentication_score }}/100)
+                </span>
+            </div>
+
+            <div class="data-item">
+                <span class="label">Facial Match Score</span>
+                <span class="value">{{ risk_assessment.facial_match_score }}/100</span>
+            </div>
+
+            <div class="data-item">
+                <span class="label">Liveness Check</span>
+                <span class="value
+                    {% if risk_assessment.liveness_check_passed %}
+                        pass
+                    {% else %}
+                        fail
+                    {% endif %}">
+                    {% if risk_assessment.liveness_check_passed %}Passed{% else %}Failed{% endif %}
+                </span>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ============================================================
+         SECTION 4: PEP SCREENING
+    ============================================================ -->
+    <div class="section-card">
+        <div class="section-title">🔍 PEP Screening</div>
+        <div class="data-grid">
+
+            <div class="data-item">
+                <span class="label">PEP Match</span>
+                <span class="value {% if risk_assessment.pep_match %}fail{% else %}pass{% endif %}">
+                    {% if risk_assessment.pep_match %}Yes{% else %}No{% endif %}
+                </span>
+            </div>
+
+            {% if risk_assessment.pep_match %}
+            <div class="data-item">
+                <span class="label">PEP Confidence</span>
+                <span class="value">{{ risk_assessment.pep_confidence }}%</span>
+            </div>
+            {% endif %}
+
+        </div>
+
+        {% if risk_assessment.pep_match and risk_assessment.pep_evidence %}
+        <div class="evidence-box">
+            <p><strong>Source List:</strong>
+                {{ risk_assessment.pep_evidence.source_list }}</p>
+            <p><strong>Match Record:</strong>
+                {{ risk_assessment.pep_evidence.match_record }}</p>
+            <p><strong>Match Basis:</strong>
+                {{ risk_assessment.pep_evidence.match_basis }}</p>
+        </div>
+        {% endif %}
+
+    </div>
+
+    <!-- ============================================================
+         SECTION 5: SANCTIONS SCREENING
+    ============================================================ -->
+    <div class="section-card">
+        <div class="section-title">🚫 Sanctions Screening</div>
+        <div class="data-grid">
+
+            <div class="data-item">
+                <span class="label">Sanctions Match</span>
+                <span class="value
+                    {% if risk_assessment.sanctions_match %}fail{% else %}pass{% endif %}">
+                    {% if risk_assessment.sanctions_match %}Yes{% else %}No{% endif %}
+                </span>
+            </div>
+
+            <div class="data-item">
+                <span class="label">State Owned Enterprise</span>
+                <span class="value
+                    {% if risk_assessment.state_owned_enterprise_flag %}fail{% else %}pass{% endif %}">
+                    {% if risk_assessment.state_owned_enterprise_flag %}Yes{% else %}No{% endif %}
+                </span>
+            </div>
+
+        </div>
+
+        {% if risk_assessment.sanctions_match and risk_assessment.sanctions_evidence %}
+        <div class="evidence-box">
+            <p><strong>Source List:</strong>
+                {{ risk_assessment.sanctions_evidence.source_list }}</p>
+            <p><strong>Match Record:</strong>
+                {{ risk_assessment.sanctions_evidence.match_record }}</p>
+            <p><strong>Match Basis:</strong>
+                {{ risk_assessment.sanctions_evidence.match_basis }}</p>
+        </div>
+        {% endif %}
+
+    </div>
+
+    <!-- ============================================================
+         SECTION 6: ADVERSE MEDIA
+    ============================================================ -->
+    <div class="section-card">
+        <div class="section-title">📰 Adverse Media</div>
+
+        <div class="data-item" style="margin-bottom: 12px;">
+            <span class="label">Adverse Media Count</span>
+            <span class="value
+                {% if risk_assessment.adverse_media_count > 0 %}fail{% else %}pass{% endif %}">
+                {{ risk_assessment.adverse_media_count }} article(s) found
+            </span>
+        </div>
+
+        {% if risk_assessment.adverse_media_count > 0 %}
+            {% for article in risk_assessment.adverse_media_articles %}
+            <div class="media-article">
+                <strong>{{ article.evidence_type }}</strong><br>
+                {{ article.description }}
+            </div>
+            {% endfor %}
+        {% else %}
+            <p style="font-size: 13px; color: #888;">No adverse media identified.</p>
+        {% endif %}
+
+    </div>
+
+    <!-- ============================================================
+         SECTION 7: TRACEIQ FINDINGS
+    ============================================================ -->
+    <div class="section-card">
+        <div class="section-title">📍 TraceIQ Findings</div>
+        <div class="data-grid">
+
+            <div class="data-item">
+                <span class="label">LexID</span>
+                <span class="value">{{ risk_assessment.trace_iq.lex_id }}</span>
+            </div>
+
+            <div class="data-item">
+                <span class="label">Current Address</span>
+                <span class="value">{{ risk_assessment.trace_iq.current_address }}</span>
+            </div>
+
+            <div class="data-item">
+                <span class="label">Residency Score</span>
+                <span class="value">{{ risk_assessment.trace_iq.residency_score }}</span>
+            </div>
+
+            <div class="data-item">
+                <span class="label">Last Seen</span>
+                <span class="value">{{ risk_assessment.trace_iq.last_seen }}</span>
+            </div>
+
+            <div class="data-item">
+                <span class="label">Mortality Status</span>
+                <span class="value
+                    {% if risk_assessment.trace_iq.mortality_status != 'No Match' %}
+                        fail
+                    {% else %}
+                        pass
+                    {% endif %}">
+                    {{ risk_assessment.trace_iq.mortality_status }}
+                </span>
+            </div>
+
+            <div class="data-item">
+                <span class="label">Bankruptcy / IVA / DRO</span>
+                <span class="value
+                    {% if risk_assessment.trace_iq.has_bankruptcy_iva_dro %}fail{% else %}pass{% endif %}">
+                    {% if risk_assessment.trace_iq.has_bankruptcy_iva_dro %}Yes{% else %}No{% endif %}
+                </span>
+            </div>
+
+            <div class="data-item">
+                <span class="label">CCJ Records</span>
+                <span class="value
+                    {% if risk_assessment.trace_iq.ccj_records %}fail{% else %}pass{% endif %}">
+                    {{ risk_assessment.trace_iq.ccj_records | length }} found
+                </span>
+            </div>
+
+            <div class="data-item">
+                <span class="label">Linked Occupants</span>
+                <span class="value">
+                    {% if risk_assessment.trace_iq.linked_occupants_names %}
+                        {{ risk_assessment.trace_iq.linked_occupants_names | join(', ') }}
+                    {% else %}
+                        None
+                    {% endif %}
+                </span>
+            </div>
+
+            <div class="data-item">
+                <span class="label">Directorships</span>
+                <span class="value">
+                    {{ risk_assessment.trace_iq.directorships | length }} found
+                </span>
+            </div>
+
+            <div class="data-item">
+                <span class="label">Sources Count</span>
+                <span class="value">{{ risk_assessment.trace_iq.sources_count }}</span>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ============================================================
+         SECTION 8: DETAILED ANALYSIS
+    ============================================================ -->
+    <div class="section-card">
+        <div class="section-title">📝 Detailed Analysis (Agent 1)</div>
+        <div class="analysis-text">
+            {{ risk_assessment.detailed_analysis }}
+        </div>
+    </div>
+
+    <!-- ============================================================
+         DECISION PANEL — ACTION BUTTONS
+         This is where the reviewer makes their decision.
+         The form submits to /submit-decision (Route 4 in app.py).
+    ============================================================ -->
+    <div class="decision-panel">
+
+        {% if review.review_type == 'edd' %}
+        <!-- EDD decision — 3 options -->
+        <h2>EDD Confirmation</h2>
+        <p>Has Enhanced Due Diligence been completed for this case?</p>
+
+        <div class="decision-buttons">
+            <form action="/submit-decision" method="POST" style="display:inline;">
+                <input type="hidden" name="token" value="{{ token }}">
+                <input type="hidden" name="decision" value="yes">
+                <button type="submit" class="btn btn-confirm">
+                    ✅ EDD Confirmed Complete
+                </button>
+            </form>
+
+            <form action="/submit-decision" method="POST" style="display:inline;">
+                <input type="hidden" name="token" value="{{ token }}">
+                <input type="hidden" name="decision" value="no">
+                <button type="submit" class="btn btn-not-complete">
+                    ❌ EDD Not Complete
+                </button>
+            </form>
+
+            <form action="/submit-decision" method="POST" style="display:inline;">
+                <input type="hidden" name="token" value="{{ token }}">
+                <input type="hidden" name="decision" value="skip">
+                <button type="submit" class="btn btn-unknown">
+                    ❓ Unknown / Cannot Confirm
+                </button>
+            </form>
+        </div>
+
+        {% else %}
+        <!-- Human review acknowledgement — 1 button -->
+        <h2>Human Review Acknowledgement</h2>
+        <p>
+            By clicking below, you confirm that you have reviewed this case
+            in full and acknowledge your responsibility as the human reviewer
+            under GDPR Article 22C.
+        </p>
+
+        <div class="decision-buttons">
+            <form action="/submit-decision" method="POST" style="display:inline;">
+                <input type="hidden" name="token" value="{{ token }}">
+                <input type="hidden" name="decision" value="acknowledged">
+                <button type="submit" class="btn btn-acknowledge">
+                    ✅ I Have Reviewed This Case — Proceed
+                </button>
+            </form>
+        </div>
+        {% endif %}
+
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        LexisNexis Agentic Identity Risk Management System —
+        Secure Reviewer Dashboard — {{ review.case_id }}
+    </div>
+
+</body>
+</html>

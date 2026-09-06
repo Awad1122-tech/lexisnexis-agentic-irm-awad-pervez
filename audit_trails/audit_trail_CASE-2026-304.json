@@ -1,6 +1,6 @@
 [
   {
-    "timestamp": "2026-08-30T13:48:57.258644",
+    "timestamp": "2026-09-06T14:36:23.573639",
     "case_id": "CASE-2026-304",
     "step": "Agent 1 - Risk Analysis",
     "action": "Completed risk assessment",
@@ -11,7 +11,18 @@
     }
   },
   {
-    "timestamp": "2026-08-30T14:28:56.872918",
+    "timestamp": "2026-09-06T14:37:42.415025",
+    "case_id": "CASE-2026-304",
+    "step": "Routing Logic - EDD Confirmation",
+    "action": "EDD confirmation received from reviewer",
+    "details": {
+      "decision": "no",
+      "enhanced_due_diligence_completed": false,
+      "trigger": "High risk score (86.0)"
+    }
+  },
+  {
+    "timestamp": "2026-09-06T14:37:42.415025",
     "case_id": "CASE-2026-304",
     "step": "Routing Logic",
     "action": "Applied deterministic overrides (GDPR Article 22C; AML/KYC Reg. 33 & 35)",
@@ -21,41 +32,40 @@
     }
   },
   {
-    "timestamp": "2026-08-30T14:29:07.760127",
+    "timestamp": "2026-09-06T14:37:57.601605",
     "case_id": "CASE-2026-304",
     "step": "Agent 2 - Compliance",
     "action": "Completed compliance check",
     "details": {
       "gdpr_compliant": false,
-      "fca_compliant": false,
+      "fca_compliant": true,
       "aml_kyc_compliant": "Non-Compliant",
       "mortality_confirmed_block": false
     }
   },
   {
-    "timestamp": "2026-08-30T14:29:13.948921",
+    "timestamp": "2026-09-06T14:38:03.725082",
     "case_id": "CASE-2026-304",
     "step": "Agent 3 - Report Generation",
     "action": "Completed final report synthesis",
     "details": {
-      "decision_rationale": "The combination of failed document authentication with a score of 54/100, low facial match score of 41/100, and failed liveness check, suggests a high risk of identity fraud. Furthermore, the device used has been linked to a prior confirmed fraud case and a proxy/anonymising network was detected, indicating attempts to obscure the true location. The sanctions match with high confidence and adverse media findings related to fraud also contribute to the high-risk assessment. No human is reviewing this case, as Confidence Score 90.0 met the threshold of 70. This means Article 22C safeguards are required but not currently in place, making this case GDPR non-compliant. The FCA's Consumer Duty principle is also not satisfied due to the lack of detailed analysis. The Identity Verification Result is FAIL, and Document Authentication Result is also Fail, which are mandatory checks for AML/KYC compliance. Enhanced Due Diligence is required but not completed, indicating a need for further verification. The cumulative effect of these risk signals and compliance flags supports the recommendation to reject the application and perform further investigation.",
+      "decision_rationale": "The risk assessment revealed several key signals, including document authentication failure, a low facial match score, and a failed liveness check, which raise concerns about the authenticity of the identity. Additionally, a sanctions match was identified on the OFAC SDN List, and adverse media findings revealed three articles related to fraud-related proceedings. The device used for verification was linked to a prior confirmed fraud case, and a proxy/anonymising network was detected. No human is reviewing this case, as the Confidence Score of 80.0 met the threshold of 70. This means Article 22C safeguards are required but not currently in place, making this case GDPR non-compliant. The FCA compliance status is true, but the identity verification failed. The AML/KYC compliance status is non-compliant due to the failed identity verification. Enhanced Due Diligence is required because the risk score is high and there are significant concerns about the authenticity of the identity. ",
       "final_recommendations": [
         "Reject the application",
-        "Perform further investigation to verify the applicant's identity",
-        "Assess the risk associated with the business relationship",
+        "Conduct further investigation",
         "Implement Article 22C safeguards to ensure GDPR compliance",
-        "Provide more detailed analysis to satisfy the FCA's Consumer Duty principle"
+        "Repeat identity verification and re-verify customer identity through alternative means to ensure AML/KYC compliance"
       ]
     }
   },
   {
-    "timestamp": "2026-08-30T14:29:23.730822",
+    "timestamp": "2026-09-06T14:38:14.479311",
     "case_id": "CASE-2026-304",
     "step": "FCA Final Check",
     "action": "Completed post-synthesis FCA re-evaluation",
     "details": {
-      "fca_compliant_final": false,
-      "reason": "The decision rationale does not explicitly demonstrate how the firm's strategies, governance, and leadership are reflected in the decision-making process, as required by the Consumer Duty principle (PRIN 2A.2.2R)."
+      "fca_compliant_final": true,
+      "reason": "The decision rationale provides a clear and well-reasoned explanation for the risk assessment, and the audit trail summary shows a complete and transparent record of the decision-making process, demonstrating compliance with the Consumer Duty and SM&CR principles (PRIN 2A.2.2R and SM&CR)."
     }
   }
 ]

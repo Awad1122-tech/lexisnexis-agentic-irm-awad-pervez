@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Access Error</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            padding: 40px;
+            width: 100%;
+            max-width: 420px;
+            text-align: center;
+        }
+
+        .header .logo-text {
+            font-size: 13px;
+            font-weight: 700;
+            color: #e8500a;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        .header .system-name {
+            font-size: 11px;
+            color: #888;
+            margin-bottom: 30px;
+        }
+
+        .icon {
+            font-size: 56px;
+            margin-bottom: 16px;
+        }
+
+        h1 {
+            font-size: 22px;
+            color: #1a1a2e;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .message {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 24px;
+            line-height: 1.6;
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 8px;
+            padding: 14px;
+            color: #721c24;
+        }
+
+        .notice {
+            font-size: 12px;
+            color: #aaa;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+
+        <div class="header">
+            <div class="logo-text">LexisNexis Risk Solutions</div>
+            <div class="system-name">Agentic Identity Risk Management System</div>
+        </div>
+
+        <div class="icon">🔒</div>
+
+        <h1>Access Denied</h1>
+
+        <div class="message">
+            {{ message }}
+        </div>
+
+        <p class="notice">
+            If you believe this is an error, please contact<br>
+            your system administrator for assistance.
+        </p>
+
+    </div>
+</body>
+</html>

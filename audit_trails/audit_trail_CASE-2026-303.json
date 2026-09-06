@@ -1,6 +1,6 @@
 [
   {
-    "timestamp": "2026-08-30T13:42:05.293159",
+    "timestamp": "2026-09-06T14:42:22.192807",
     "case_id": "CASE-2026-303",
     "step": "Agent 1 - Risk Analysis",
     "action": "Completed risk assessment",
@@ -11,7 +11,18 @@
     }
   },
   {
-    "timestamp": "2026-08-30T13:42:18.973537",
+    "timestamp": "2026-09-06T14:44:33.685088",
+    "case_id": "CASE-2026-303",
+    "step": "Routing Logic - EDD Confirmation",
+    "action": "EDD confirmation received from reviewer",
+    "details": {
+      "decision": "yes",
+      "enhanced_due_diligence_completed": true,
+      "trigger": "PEP match"
+    }
+  },
+  {
+    "timestamp": "2026-09-06T14:44:33.685088",
     "case_id": "CASE-2026-303",
     "step": "Routing Logic",
     "action": "Applied deterministic overrides (GDPR Article 22C; AML/KYC Reg. 33 & 35)",
@@ -21,7 +32,7 @@
     }
   },
   {
-    "timestamp": "2026-08-30T13:42:29.484981",
+    "timestamp": "2026-09-06T14:45:02.027330",
     "case_id": "CASE-2026-303",
     "step": "Agent 2 - Compliance",
     "action": "Completed compliance check",
@@ -33,27 +44,27 @@
     }
   },
   {
-    "timestamp": "2026-08-30T13:42:35.504570",
+    "timestamp": "2026-09-06T14:45:11.817769",
     "case_id": "CASE-2026-303",
     "step": "Agent 3 - Report Generation",
     "action": "Completed final report synthesis",
     "details": {
-      "decision_rationale": "The risk assessment revealed a PEP match with a confidence score of 92, indicating that the subject is listed as the spouse of a government official, which raises concerns about potential money laundering or corruption. Additionally, an adverse media finding related to a financial dispute was discovered, further increasing the risk. The device reputation issue due to VPN/proxy detection and geolocation inconsistency between the device location and registered address also contribute to the medium-high risk rating. From a compliance perspective, the case is not GDPR compliant because no human is reviewing this case, as the Confidence Score of 85.0 met the threshold of 70. This means Article 22C safeguards are required but not currently in place. However, the case is FCA and AML/KYC compliant. The completion of enhanced due diligence has provided additional information, but the risk and compliance findings still require careful consideration.",
+      "decision_rationale": "The final overall risk rating of MEDIUM-HIGH is due to several key signals, including a PEP match with a confidence score of 92, adverse media findings, and device reputation issues. No human is reviewing this case, as the Confidence Score of 80.0 compared against the threshold of 70. This means Article 22C safeguards are required but not currently in place, making this case GDPR non-compliant. However, the detailed analysis seems to align with FCA principles, particularly the Consumer Duty, indicating good faith and fair dealing with the customer. The PEP match confirmed, but enhanced due diligence has been completed, indicating compliance with AML/KYC requirements for PEPs. Enhanced Due Diligence is required for this case because the PEP Match is True, and it has been confirmed completed. ",
       "final_recommendations": [
-        "Carefully review the PEP match and adverse media finding to determine their relevance to the case",
-        "Assess the device reputation issue and geolocation inconsistency to determine their impact on the risk rating",
-        "Implement Article 22C safeguards to ensure GDPR compliance"
+        "Implement Article 22C safeguards to ensure GDPR compliance",
+        "Continue to monitor the subject's business activities and connections to state-linked entities",
+        "Verify the subject's identity and residency through additional documentation"
       ]
     }
   },
   {
-    "timestamp": "2026-08-30T13:42:45.357912",
+    "timestamp": "2026-09-06T14:45:29.572202",
     "case_id": "CASE-2026-303",
     "step": "FCA Final Check",
     "action": "Completed post-synthesis FCA re-evaluation",
     "details": {
       "fca_compliant_final": true,
-      "reason": "The case presents a clear and well-reasoned rationale for the risk assessment and compliance findings, and the audit trail provides a complete record of the steps taken, demonstrating compliance with the Consumer Duty and SM&CR principles, such as PRIN 2A.2.2R and the requirement for Senior Managers to take reasonable steps to ensure effective control of the firm's business."
+      "reason": "The decision rationale and audit trail summary demonstrate a clear and well-reasoned process, with a thorough risk assessment and completed enhanced due diligence, aligning with FCA principles of good faith and fair dealing with retail consumers (PRIN 2A.2.2R) and the Consumer Duty."
     }
   }
 ]
