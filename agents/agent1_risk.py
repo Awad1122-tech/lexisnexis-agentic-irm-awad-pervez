@@ -213,8 +213,12 @@ def create_prompt():
          5. Whether a PEP match was identified - if true, extract the source list, matched
             record, and match basis from the Bridger Insight XG section
          6. Whether a sanctions match was identified - if true, extract the same evidence detail
-         7. Adverse media findings - for each article found, extract its description and the
-            evidence type/source (e.g. "National news archive search"); and State-Owned Enterprise flag
+         7. Adverse media findings - you MUST extract EVERY article found as a separate 
+            AdverseMediaArticle object in the adverse_media_articles list. Do NOT summarise 
+            multiple articles into one. If the source document states 3 articles were found, 
+            you MUST include exactly 3 separate items in the list. For each article, extract 
+            its description and the evidence type/source (e.g. "National news archive search"); 
+            and State-Owned Enterprise flag
          8. TraceIQ findings: LexID, aliases, current address with residency score and supporting
             source records, property ownership details, occupants and how they were sourced,
             previous address history with source records, mortality status, ALL CCJs found

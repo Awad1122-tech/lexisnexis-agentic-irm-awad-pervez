@@ -1,6 +1,6 @@
 [
   {
-    "timestamp": "2026-08-30T20:13:26.253033",
+    "timestamp": "2026-09-09T23:28:38.151179",
     "case_id": "CASE-2026-312",
     "step": "Agent 1 - Risk Analysis",
     "action": "Completed risk assessment",
@@ -11,7 +11,7 @@
     }
   },
   {
-    "timestamp": "2026-08-30T20:13:26.254049",
+    "timestamp": "2026-09-09T23:28:38.153177",
     "case_id": "CASE-2026-312",
     "step": "Routing Logic",
     "action": "Applied deterministic overrides (GDPR Article 22C; AML/KYC Reg. 33 & 35)",
@@ -21,39 +21,40 @@
     }
   },
   {
-    "timestamp": "2026-08-30T20:13:37.649140",
+    "timestamp": "2026-09-09T23:28:58.917307",
     "case_id": "CASE-2026-312",
     "step": "Agent 2 - Compliance",
     "action": "Completed compliance check",
     "details": {
       "gdpr_compliant": false,
-      "fca_compliant": true,
+      "fca_compliant": false,
       "aml_kyc_compliant": "Non-Compliant",
       "mortality_confirmed_block": false
     }
   },
   {
-    "timestamp": "2026-08-30T20:13:42.868569",
+    "timestamp": "2026-09-09T23:29:04.796466",
     "case_id": "CASE-2026-312",
     "step": "Agent 3 - Report Generation",
     "action": "Completed final report synthesis",
     "details": {
-      "decision_rationale": "The risk assessment summary indicates a medium-high risk rating, with key signals including a failed document authentication and a low facial match score. The compliance status summary reveals that the case is GDPR non-compliant because no human is reviewing this case, as the Confidence Score of 80.0 compared against the threshold of 70 does not satisfy Article 22C safeguards. The FCA compliance is satisfied due to the clear explanation of the decision-making process. However, the AML/KYC compliance is non-compliant due to insufficient identity verification, as indicated by the failed document authentication and low facial match score. The liveness check passing and full identity match are positive indicators, but the failed document authentication and low facial match score necessitate further review. Enhanced Due Diligence is not required, as the risk score did not exceed 75 and no PEP match was found.",
+      "decision_rationale": "The document authentication result shows a failure with a score of 46/100, indicating potential tampering or alteration of the document, and the facial match score of 38/100 also raises concerns about the authenticity of the identity. No human is reviewing this case, as the Confidence Score of 80.0 met the threshold of 70. This means Article 22C safeguards are required but not currently in place, making this case GDPR non-compliant. The FCA compliance flag indicates that the detailed analysis raises concerns about the fairness and transparency of the decision-making process. The AML/KYC compliance flag indicates that document authentication failed, which compromises the integrity of the customer due diligence process. Enhanced Due Diligence is not required for this case, as the risk score did not exceed 75 and no PEP match was found. However, further investigation is required to clarify the authenticity of the identity.",
       "final_recommendations": [
-        "Conduct further verification and due diligence to confirm the identity and authenticity of the submitted document",
+        "Conduct further investigation to verify the authenticity of the identity document and the individual's connection to the address",
         "Implement Article 22C safeguards to ensure GDPR compliance",
-        "Re-verify customer identity through alternative means to ensure authenticity of documents for AML/KYC compliance"
+        "Ensure that the decision-making process is transparent, fair, and compliant with the Consumer Duty",
+        "Repeat document authentication through alternative means to verify the customer's identity documents and ensure their authenticity"
       ]
     }
   },
   {
-    "timestamp": "2026-08-30T20:13:52.113190",
+    "timestamp": "2026-09-09T23:29:20.129969",
     "case_id": "CASE-2026-312",
     "step": "FCA Final Check",
     "action": "Completed post-synthesis FCA re-evaluation",
     "details": {
-      "fca_compliant_final": true,
-      "reason": "The Decision Rationale provides a clear explanation of the decision-making process, satisfying the FCA's requirement for transparency and explainability, as outlined in PRIN 2A.2.2R and the SM&CR."
+      "fca_compliant_final": false,
+      "reason": "The decision rationale and audit trail do not provide clear evidence of how the firm is acting in good faith, ensuring effective control of the business, or meeting its Consumer Duty obligations, as required by PRIN 2A.2.2R and the SM&CR."
     }
   }
 ]

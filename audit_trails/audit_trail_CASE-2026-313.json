@@ -1,6 +1,6 @@
 [
   {
-    "timestamp": "2026-08-30T20:31:48.509357",
+    "timestamp": "2026-09-10T00:08:25.676695",
     "case_id": "CASE-2026-313",
     "step": "Agent 1 - Risk Analysis",
     "action": "Completed risk assessment",
@@ -11,7 +11,18 @@
     }
   },
   {
-    "timestamp": "2026-08-30T20:32:01.802579",
+    "timestamp": "2026-09-10T00:09:33.094729",
+    "case_id": "CASE-2026-313",
+    "step": "Routing Logic - EDD Confirmation",
+    "action": "EDD confirmation received from reviewer",
+    "details": {
+      "decision": "skip",
+      "enhanced_due_diligence_completed": null,
+      "trigger": "PEP match"
+    }
+  },
+  {
+    "timestamp": "2026-09-10T00:09:33.094729",
     "case_id": "CASE-2026-313",
     "step": "Routing Logic",
     "action": "Applied deterministic overrides (GDPR Article 22C; AML/KYC Reg. 33 & 35)",
@@ -21,39 +32,39 @@
     }
   },
   {
-    "timestamp": "2026-08-30T20:32:14.958827",
+    "timestamp": "2026-09-10T00:09:55.756605",
     "case_id": "CASE-2026-313",
     "step": "Agent 2 - Compliance",
     "action": "Completed compliance check",
     "details": {
       "gdpr_compliant": false,
-      "fca_compliant": true,
+      "fca_compliant": false,
       "aml_kyc_compliant": "Pending Verification",
       "mortality_confirmed_block": false
     }
   },
   {
-    "timestamp": "2026-08-30T20:32:20.189434",
+    "timestamp": "2026-09-10T00:10:01.768267",
     "case_id": "CASE-2026-313",
     "step": "Agent 3 - Report Generation",
     "action": "Completed final report synthesis",
     "details": {
-      "decision_rationale": "The medium-high risk rating is due to several factors, including a PEP match with a high confidence score, adverse media findings, and a state-owned enterprise link. No human is reviewing this case, as the Confidence Score of 85.0 compared against the threshold of 70 indicates that Article 22C safeguards are required but not currently in place, making this case GDPR non-compliant. The FCA compliance is satisfied due to the detailed analysis acting in good faith. The AML/KYC pending verification is due to the PEP match confirmed and EDD completion not yet verified. The risk signals, including the PEP match and adverse media findings, necessitate Enhanced Due Diligence, which is required because the PEP match is True. The completion of Enhanced Due Diligence will help mitigate the potential risks associated with this case.",
+      "decision_rationale": "The risk assessment findings, including the PEP match with a confidence score of 95 and adverse media findings, indicate a high likelihood of the subject being a Politically Exposed Person. The compliance findings, including the lack of human review and the Confidence Score of 80.0 compared against the threshold of 70, contribute to the GDPR non-compliance. The FCA non-compliance is due to the lack of transparency in AI decision-making. The AML/KYC compliance is pending verification due to the PEP match confirmed. Enhanced Due Diligence is required because the PEP match is True. The combination of these risk signals and compliance findings supports the recommendation for enhanced due diligence and careful review of the case.",
       "final_recommendations": [
+        "Perform enhanced due diligence to verify the subject's identity and assess the risk of doing business with them",
         "Implement Article 22C safeguards to ensure GDPR compliance",
-        "Complete Enhanced Due Diligence to mitigate potential risks",
-        "Conduct a thorough review of the subject's business activities and associations"
+        "Ensure transparency in AI decision-making to achieve FCA compliance"
       ]
     }
   },
   {
-    "timestamp": "2026-08-30T20:32:28.410288",
+    "timestamp": "2026-09-10T00:10:14.479590",
     "case_id": "CASE-2026-313",
     "step": "FCA Final Check",
     "action": "Completed post-synthesis FCA re-evaluation",
     "details": {
       "fca_compliant_final": true,
-      "reason": "The decision rationale acts in good faith, and the detailed analysis provides a clear and well-reasoned explanation of the risk assessment, satisfying the Consumer Duty and SM&CR requirements."
+      "reason": "The decision rationale provides a clear and well-reasoned explanation for the recommendation of enhanced due diligence, and the audit trail summary provides a record of the steps taken, demonstrating compliance with the FCA's Principles for Business (Principle 2 and Principle 3) and the Consumer Duty requirement for honesty, fair and open dealing with retail consumers."
     }
   }
 ]

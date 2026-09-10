@@ -1,6 +1,6 @@
 [
   {
-    "timestamp": "2026-08-30T21:46:04.387458",
+    "timestamp": "2026-09-10T00:50:48.995013",
     "case_id": "CASE-2026-316",
     "step": "Agent 1 - Risk Analysis",
     "action": "Completed risk assessment",
@@ -11,7 +11,7 @@
     }
   },
   {
-    "timestamp": "2026-08-30T21:46:04.389459",
+    "timestamp": "2026-09-10T00:50:48.997017",
     "case_id": "CASE-2026-316",
     "step": "Routing Logic",
     "action": "Applied deterministic overrides (GDPR Article 22C; AML/KYC Reg. 33 & 35)",
@@ -21,7 +21,7 @@
     }
   },
   {
-    "timestamp": "2026-08-30T21:46:12.974466",
+    "timestamp": "2026-09-10T00:51:03.070963",
     "case_id": "CASE-2026-316",
     "step": "Agent 2 - Compliance",
     "action": "Completed compliance check",
@@ -33,26 +33,26 @@
     }
   },
   {
-    "timestamp": "2026-08-30T21:46:18.256565",
+    "timestamp": "2026-09-10T00:51:09.548043",
     "case_id": "CASE-2026-316",
     "step": "Agent 3 - Report Generation",
     "action": "Completed final report synthesis",
     "details": {
-      "decision_rationale": "The risk assessment summary shows a full identity match, clean device reputation, high residency score confirmed, and no PEP or sanctions match found. However, a potential mortality match was found, which requires further investigation. The compliance status summary indicates that no human is reviewing this case, as the Confidence Score of 80.0 met the threshold of 70. This means Article 22C safeguards are required but not currently in place, making this case GDPR non-compliant. The FCA compliance is satisfied due to the detailed analysis meeting FCA requirements. The AML/KYC compliance is non-compliant due to the potential mortality match requiring manual verification. The overall risk rating is medium due to the potential mortality match. Enhanced Due Diligence is not required for this case, as the risk score did not exceed 75 and no PEP match was found.",
+      "decision_rationale": "The medium risk rating is due to a potential mortality match identified in the national death register, which is based on name initial and date of birth only. However, the full given name, middle name, and last known address before death do not corroborate against the subject's current record. The subject's identity has been verified with a full match across all fields, and the document authentication result is a pass with a score of 90. The facial match score is 86, and the liveness check has also passed. No human is reviewing this case, as the Confidence Score of 80.0 met the threshold of 70. This means Article 22C safeguards are required but not currently in place, making this case GDPR non-compliant. The detailed analysis satisfies FCA principles, making it FCA compliant. However, manual verification of the potential mortality match is required to confirm the status of the individual, making it AML/KYC non-compliant. Enhanced Due Diligence is not required for this case, as the risk score did not exceed 75 and no PEP match was found.",
       "final_recommendations": [
-        "Review the potential mortality match and verify the subject's identity through additional means, such as contacting the subject directly or checking with other reliable sources.",
-        "Implement Article 22C safeguards, including human intervention and the ability to contest decisions, to ensure GDPR compliance."
+        "Verify the subject's mortality status manually against the death register's full record before proceeding",
+        "Implement Article 22C safeguards to ensure GDPR compliance"
       ]
     }
   },
   {
-    "timestamp": "2026-08-30T21:46:28.782309",
+    "timestamp": "2026-09-10T00:51:22.619859",
     "case_id": "CASE-2026-316",
     "step": "FCA Final Check",
     "action": "Completed post-synthesis FCA re-evaluation",
     "details": {
       "fca_compliant_final": true,
-      "reason": "The decision rationale provides a clear and well-reasoned explanation for the decision, and the audit trail is complete, demonstrating accountability and explainability as required by the FCA principles, such as PRIN 2A.2.2R and the SM&CR."
+      "reason": "The Decision Rationale provides a clear and well-reasoned explanation for the medium risk rating, citing specific evidence such as the potential mortality match and the verification of the subject's identity. The Audit Trail Summary shows a complete and transparent record of the decision-making process, with all necessary steps completed. This satisfies the FCA principles of acting in good faith and meeting the information needs of retail consumers, as outlined in PRIN 2A.2.2R and the Consumer Duty."
     }
   }
 ]

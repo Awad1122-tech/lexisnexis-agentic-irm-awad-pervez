@@ -1,0 +1,70 @@
+[
+  {
+    "timestamp": "2026-09-10T01:18:46.642978",
+    "case_id": "CASE-2026-317",
+    "step": "Agent 1 - Risk Analysis",
+    "action": "Completed risk assessment",
+    "details": {
+      "overall_risk_rating": "MEDIUM-HIGH",
+      "pep_match": true,
+      "mortality_status": "No Match"
+    }
+  },
+  {
+    "timestamp": "2026-09-10T01:19:38.509059",
+    "case_id": "CASE-2026-317",
+    "step": "Routing Logic - EDD Confirmation",
+    "action": "EDD confirmation received from reviewer",
+    "details": {
+      "decision": "no",
+      "enhanced_due_diligence_completed": false,
+      "trigger": "PEP match"
+    }
+  },
+  {
+    "timestamp": "2026-09-10T01:19:38.509059",
+    "case_id": "CASE-2026-317",
+    "step": "Routing Logic",
+    "action": "Applied deterministic overrides (GDPR Article 22C; AML/KYC Reg. 33 & 35)",
+    "details": {
+      "requires_human_review": false,
+      "enhanced_due_diligence_required": true
+    }
+  },
+  {
+    "timestamp": "2026-09-10T01:19:46.093259",
+    "case_id": "CASE-2026-317",
+    "step": "Agent 2 - Compliance",
+    "action": "Completed compliance check",
+    "details": {
+      "gdpr_compliant": false,
+      "fca_compliant": true,
+      "aml_kyc_compliant": "Non-Compliant",
+      "mortality_confirmed_block": false
+    }
+  },
+  {
+    "timestamp": "2026-09-10T01:19:52.380909",
+    "case_id": "CASE-2026-317",
+    "step": "Agent 3 - Report Generation",
+    "action": "Completed final report synthesis",
+    "details": {
+      "decision_rationale": "The medium-high risk rating is driven by the PEP match, which indicates that Sophie Laurent is a politically exposed person, and the moderate transaction velocity and international transfer pattern. The compliance findings reveal that the case is GDPR non-compliant because no human is reviewing the case, as the Confidence Score of 80.0 compared against the threshold of 70 indicates that Article 22C safeguards are required but not currently in place. The AML/KYC non-compliance is due to the PEP match and the incomplete enhanced due diligence, which is required to verify the subject's identity and activities. Enhanced Due Diligence is required because the PEP match is True. The clean device reputation and high residency score confirmed are positive indicators, but the overall risk and compliance status necessitate further review and action.",
+      "final_recommendations": [
+        "Conduct enhanced due diligence to verify Sophie Laurent's identity and activities",
+        "Implement Article 22C safeguards to ensure GDPR compliance",
+        "Repeat identity verification and re-verify customer identity through alternative means to ensure AML/KYC compliance"
+      ]
+    }
+  },
+  {
+    "timestamp": "2026-09-10T01:20:05.942010",
+    "case_id": "CASE-2026-317",
+    "step": "FCA Final Check",
+    "action": "Completed post-synthesis FCA re-evaluation",
+    "details": {
+      "fca_compliant_final": true,
+      "reason": "The decision rationale provides a clear and well-reasoned explanation for the medium-high risk rating and the recommended action, and the audit trail shows that multiple agents have reviewed and contributed to the decision-making process, demonstrating a level of accountability and transparency in line with the Consumer Duty and SM&CR principles."
+    }
+  }
+]

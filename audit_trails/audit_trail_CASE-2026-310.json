@@ -1,6 +1,6 @@
 [
   {
-    "timestamp": "2026-08-30T16:38:45.207860",
+    "timestamp": "2026-09-09T22:40:10.390432",
     "case_id": "CASE-2026-310",
     "step": "Agent 1 - Risk Analysis",
     "action": "Completed risk assessment",
@@ -11,7 +11,7 @@
     }
   },
   {
-    "timestamp": "2026-08-30T16:38:45.208861",
+    "timestamp": "2026-09-09T22:40:10.392627",
     "case_id": "CASE-2026-310",
     "step": "Routing Logic",
     "action": "Applied deterministic overrides (GDPR Article 22C; AML/KYC Reg. 33 & 35)",
@@ -21,7 +21,7 @@
     }
   },
   {
-    "timestamp": "2026-08-30T16:38:56.767711",
+    "timestamp": "2026-09-09T22:40:20.707179",
     "case_id": "CASE-2026-310",
     "step": "Agent 2 - Compliance",
     "action": "Completed compliance check",
@@ -33,26 +33,27 @@
     }
   },
   {
-    "timestamp": "2026-08-30T16:39:01.824385",
+    "timestamp": "2026-09-09T22:40:26.927470",
     "case_id": "CASE-2026-310",
     "step": "Agent 3 - Report Generation",
     "action": "Completed final report synthesis",
     "details": {
-      "decision_rationale": "The overall risk rating is medium due to the new device with no previous activity and the address on file not matching the current application address. However, positive indicators such as full identity match from credit reference bureau, document authentication passing with a score of 92/100, and facial match score of 89/100 support the medium risk rating. The liveness check passing and no PEP or sanctions match found also contribute to this assessment. From a compliance perspective, no human is reviewing this case, as Confidence Score 80.0 met the threshold of 70. This means Article 22C safeguards are required but not currently in place, making this case GDPR non-compliant. Enhanced Due Diligence is not required for this case. The compliance flags, including the lack of human review and the substantive detailed analysis, highlight the need for manual review to ensure accountability and explainability as required by FCA regulations.",
+      "decision_rationale": "The medium risk rating is due to the full identity match, passed document authentication, and high residency score for the current address, which provide assurance. However, the new device with an inactive previous device and inconsistent geolocation with the address on file raise concerns. The facial match score of 89/100 and liveness check passed provide additional assurance. No human is reviewing this case, as Confidence Score 80.0 met the threshold of 70. This means Article 22C safeguards are required but not currently in place, making this case GDPR non-compliant. The detailed analysis satisfies FCA principles, and there is no PEP match, which contributes to the AML/KYC compliance. Enhanced Due Diligence is not required, as the risk score did not exceed 75 and no PEP match was found. The inconsistent geolocation and new device require careful consideration, and the lack of GDPR compliance necessitates implementing Article 22C safeguards.",
       "final_recommendations": [
-        "Manually review the case to verify identity and assess risk associated with new device and address discrepancy",
-        "Implement human review for automated decision-making to ensure GDPR compliance"
+        "Proceed with caution",
+        "Implement Article 22C safeguards to ensure GDPR compliance",
+        "Verify the subject's identity and address"
       ]
     }
   },
   {
-    "timestamp": "2026-08-30T16:39:15.216495",
+    "timestamp": "2026-09-09T22:40:37.954386",
     "case_id": "CASE-2026-310",
     "step": "FCA Final Check",
     "action": "Completed post-synthesis FCA re-evaluation",
     "details": {
       "fca_compliant_final": true,
-      "reason": "The Decision Rationale provides a clear and well-reasoned explanation for the medium risk rating, and the Audit Trail Summary demonstrates a complete record of events, satisfying the Consumer Duty principle of acting in good faith and the SM&CR requirement of senior management accountability."
+      "reason": "The decision rationale provides a clear and well-reasoned explanation for the medium risk rating, citing specific evidence such as the full identity match, passed document authentication, and high residency score, and the audit trail summary demonstrates a transparent and accountable process, in line with the Consumer Duty principle of acting in good faith and meeting the information needs of retail consumers (PRIN 2A.2.2R and Consumer Duty)."
     }
   }
 ]

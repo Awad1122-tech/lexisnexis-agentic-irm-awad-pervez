@@ -570,7 +570,7 @@ def run_pipeline(file_path: str):
 if __name__ == "__main__":                                                 # this code only runs if you execute main.py directly
     from agents.agent3_report import print_readable_report
 
-    FILE_PATH = os.path.join(BASE_DIR, "data", "CASE-2026-314.pdf")        # builds the full path to a specific test case file, using BASE_DIR (project's root folder) to construct it correctly.
+    FILE_PATH = os.path.join(BASE_DIR, "data", "CASE-2026-318.pdf")        # builds the full path to a specific test case file, using BASE_DIR (project's root folder) to construct it correctly.
     final_state, audit_filepath = run_pipeline(FILE_PATH)
 
     print("\n" + "="*80)

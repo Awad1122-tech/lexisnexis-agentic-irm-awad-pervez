@@ -1,6 +1,6 @@
 [
   {
-    "timestamp": "2026-08-30T16:26:18.756095",
+    "timestamp": "2026-09-09T21:51:16.491995",
     "case_id": "CASE-2026-308",
     "step": "Agent 1 - Risk Analysis",
     "action": "Completed risk assessment",
@@ -11,7 +11,7 @@
     }
   },
   {
-    "timestamp": "2026-08-30T16:26:18.757098",
+    "timestamp": "2026-09-09T21:51:16.493996",
     "case_id": "CASE-2026-308",
     "step": "Routing Logic",
     "action": "Applied deterministic overrides (GDPR Article 22C; AML/KYC Reg. 33 & 35)",
@@ -21,7 +21,7 @@
     }
   },
   {
-    "timestamp": "2026-08-30T16:26:34.467479",
+    "timestamp": "2026-09-09T21:51:26.212456",
     "case_id": "CASE-2026-308",
     "step": "Agent 2 - Compliance",
     "action": "Completed compliance check",
@@ -33,27 +33,27 @@
     }
   },
   {
-    "timestamp": "2026-08-30T16:26:39.995915",
+    "timestamp": "2026-09-09T21:51:31.598395",
     "case_id": "CASE-2026-308",
     "step": "Agent 3 - Report Generation",
     "action": "Completed final report synthesis",
     "details": {
-      "decision_rationale": "The medium overall risk rating is due to a combination of positive signals, such as a full identity match, clean device reputation, and high residency score confirmed, and negative signals, including three CCJs found, an IVA registered, and an adverse media article found. The facial match score and document authentication score are both high, which suggests that the provided identity document is genuine. However, the compliance findings indicate that no human is reviewing this case, as the Confidence Score of 80.0 met the threshold of 70. This means Article 22C safeguards are required but not currently in place, making this case GDPR non-compliant. The FCA compliance status is true, and AML/KYC compliance status is also compliant. Enhanced Due Diligence is not required for this case. The negative signals, including financial difficulties and business insolvency proceedings, are relevant for AML/KYC purposes and require further investigation.",
+      "decision_rationale": "The medium risk rating is due to a combination of positive and negative signals. On the one hand, there is a full identity match, clean device reputation, and high residency score confirmed, which are all positive indicators. On the other hand, there are CCJs found, an IVA registered, and business insolvency proceedings, which raise concerns. The document authentication result and facial match score are both high, and the liveness check passed, suggesting that the subject is genuine. However, no human is reviewing this case, as the Confidence Score of 80 met the threshold of 70. This means Article 22C safeguards are required but not currently in place, making this case GDPR non-compliant. The FCA compliance is satisfied due to the detailed analysis, and AML/KYC compliance is also met. Enhanced Due Diligence is not required for this case, as the risk score did not exceed 75 and no PEP match was found.",
       "final_recommendations": [
-        "Verify Patricia Hughes' identity through further investigation",
-        "Assess the risk associated with her financial difficulties and business insolvency proceedings",
-        "Implement human review to comply with Article 22C safeguards for GDPR compliance"
+        "Conduct further investigation into the CCJs and IVA",
+        "Review the business insolvency proceedings to determine the risk level",
+        "Implement Article 22C safeguards to ensure GDPR compliance"
       ]
     }
   },
   {
-    "timestamp": "2026-08-30T16:26:49.327212",
+    "timestamp": "2026-09-09T21:51:41.784310",
     "case_id": "CASE-2026-308",
     "step": "FCA Final Check",
     "action": "Completed post-synthesis FCA re-evaluation",
     "details": {
       "fca_compliant_final": true,
-      "reason": "The decision rationale provides a clear and well-reasoned explanation for the medium overall risk rating, and the FCA compliance status is explicitly stated as true, demonstrating adherence to the Consumer Duty principle of acting in good faith and delivering good outcomes for retail customers."
+      "reason": "The decision rationale provides a clear and well-reasoned explanation for the medium risk rating, citing both positive and negative signals, and the audit trail summary shows a complete record of the assessment process, satisfying the FCA's principles for business, particularly Principle 2 (conducting business with due skill, care, and diligence) and Principle 3 (taking reasonable care to organise and control affairs responsibly)."
     }
   }
 ]
