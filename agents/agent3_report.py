@@ -19,6 +19,10 @@ load_dotenv()
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+# --------------------------------------------------------------------------------
+# Augmentation - Prompt Template
+# -------------------------------------------------------------------------------
+
 def create_prompt():
     parser = PydanticOutputParser(pydantic_object=ReportSynthesis)
     format_instructions = parser.get_format_instructions()
@@ -118,7 +122,7 @@ Agent 3 writes the report before we know the FINAL FCA verdict. Later, that verd
 """
 def create_report_revision_prompt():
     prompt = ChatPromptTemplate.from_messages([
-        ("system", """You revise two parts of a compliance report to ensure they
+        ("system", """You revise four parts of a compliance report to ensure they
          accurately reflect the FINAL, confirmed compliance status - correcting
          any outdated or contradictory statements about FCA compliance
          specifically, while keeping everything else unchanged."""),

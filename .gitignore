@@ -1,0 +1,18 @@
+# Environment variables
+.env
+
+# ChromaDB vector stores (auto-generated)
+chroma_db/
+chroma_db_regulatory/
+
+# Generated outputs
+audit_trails/
+reports/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# VS Code settings
+.vscode/

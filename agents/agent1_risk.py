@@ -1,3 +1,14 @@
+"""
+agent1_risk.py:
+
+Agent 1 - Risk Analysis Agent
+Implements the RAG pipeline for identity risk assessment using LexisNexis case PDFs.
+Loads, Chunks, embed, retrieves, and generates structured risk assessmennts via Llama-3.3-70B-Instruct.
+
+
+"""
+
+
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_huggingface import HuggingFaceEndpointEmbeddings, ChatHuggingFace, HuggingFaceEndpoint
@@ -25,10 +36,6 @@ def load_case_data(file_path: str):
 ## Step 2 of RAG Pipeline: Text Chunking (split loaded document into smaller chunks for embedding)
 
 def split_documents(docs):
-
-    # TODO: chunk_size=500 may be too small given TraceIQ's longer sections
-    # and evidence-level detail (source records, screening hits). If retrieval
-    # quality seems weak, test increasing chunk_size to 800-1000.
 
     """
     I am using RecursiveCharacterTextSplitter because, it tries multiple separators in order (paragraph breaks, then line breaks, then spaces) 
@@ -72,8 +79,7 @@ Why we are using this here:
    By extracting it directly from the PDF with plain code, you get a guaranteed accurate value
 
 """
-
-
+# -------------------------------------------------------------------------------------------
 
 """
     Creates a unique fingerprint (MD5 hash) of the case's actual text content.
@@ -83,6 +89,7 @@ Why we are using this here:
 
 """
 
+# Takes all PDF text -> joins into one string -> converts to a unique 32-character fingerprint -> returns it
 def get_content_hash(docs) -> str:
     full_text = "\n".join(doc.page_content for doc in docs)
     return hashlib.md5(full_text.encode()).hexdigest()
@@ -95,7 +102,7 @@ def get_content_hash(docs) -> str:
 def create_vector_store(chunks, case_id: str, content_hash: str):
 
     # convert chunks to embeddings and store in ChromaDB
-    # Each case is identified by its unuique case_id to prevent duplication
+    # Each case is identified by its unique case_id to prevent duplication
 
     embedding_model = HuggingFaceEndpointEmbeddings(
         model = 'sentence-transformers/all-MiniLM-L6-v2',
@@ -113,7 +120,7 @@ def create_vector_store(chunks, case_id: str, content_hash: str):
 
     # Check if this case_id has already been embedded, to avoid duplication
 
-    existing = vector_store.get(where={"case_id": case_id})
+    existing = vector_store.get(where={"case_id": case_id})  # existing contain, list of IDs of all chunks that match this case_id, list of metadata dictionaries for each matching chunk, list of text content for each matching chunk
 
     """
     Keeps ChromaDB in sync with the actual case file, handling 3 scenarios:
@@ -131,13 +138,13 @@ def create_vector_store(chunks, case_id: str, content_hash: str):
     if len(existing['ids']) > 0:
         existing_hash = existing['metadatas'][0].get('content_hash')
         if existing_hash == content_hash:
-            needs_refresh = False
+            needs_refresh = False                                          # case exists AND hash matches -> skip embedding
 
-    if needs_refresh:
-        vector_store.delete(where={"case_id": case_id})
+    if needs_refresh:                                                      # If still True, either brand new case OR content changed
+        vector_store.delete(where={"case_id": case_id})                    # delete old stale chunks
         for chunk in chunks:
-            chunk.metadata['case_id'] = case_id
-            chunk.metadata['content_hash'] = content_hash
+            chunk.metadata['case_id'] = case_id                            # stamp case ID on every chunk
+            chunk.metadata['content_hash'] = content_hash                  # stamp hash on every chunk
         vector_store.add_documents(chunks)                 # vector_store.add_documents(chunks) = embed (using embedding_model) + store (into ChromaDB), both happening together, in that exact order, within this single line.
 
     return vector_store
@@ -148,10 +155,10 @@ def create_vector_store(chunks, case_id: str, content_hash: str):
 
 def create_retriever(vector_store, case_id: str):
 
-    retriever = vector_store .as_retriever(      # .as_retriever() is a method that converts vector_store (the Chroma database object) into a proper Retriever object - which is a Runnable, meaning it can be used with .invoke() and chained with |.
+    retriever = vector_store.as_retriever(      # .as_retriever() is a method that converts vector_store (the Chroma database object) into a proper Retriever object - which is a Runnable, meaning it can be used with .invoke() and chained with |.
         search_type = "similarity",
         search_kwargs = {
-            "k" : 12,
+            "k": 12,
             "filter": {"case_id": case_id}  # This restricts the similarity search to ONLY chunks that belong to the current case, it's not part of the similarity calculation itself, it's a hard restriction applied first, narrowing the search pool before comparing embeddings.
 
         } 
@@ -163,7 +170,7 @@ def create_retriever(vector_store, case_id: str):
 ## Step 5 of RAG Pipeline: Augmentation (creating prompt template, combining context and question), builds the prompt template that will later be combined with retrieved context and sent to the LLM.
 
 
-# This function only does JOB 1 (telling the LLM the expected format through format_instructions), it does NOT validate anything yet. Validation (JOB 2) happens later, in run_risk_analysis(), when the LLM's actual response comes back.
+# This function only do JOB 1 (telling the LLM the expected format through format_instructions), it does NOT validate anything yet. Validation (JOB 2) happens later, in run_risk_analysis(), when the LLM's actual response comes back.
 
 def create_prompt():
 
@@ -180,7 +187,7 @@ def create_prompt():
     # .from_messages() is a method of the ChatPromptTemplate class used to construct/create a ChatPromptTemplate object from a list of role-based messages.
 
     risk_prompt = ChatPromptTemplate.from_messages([                                               # Also ChatPromptTemplate is a runnable
-        ("system", """ You are an expert identity risk analyst at LexisNexis Risk Solution. 
+        ("system", """ You are an expert identity risk analyst at LexisNexis Risk Solutions. 
          You analyse identity verification, fraud screening, and identity tracing data from
          LexisNexis products: ThreatMetrix, IDU / Instant Verify International, TrueID, TraceIQ, and Bridger Insight XG.
          You provide detailed, accurate, and professionally structured risk assessments.
@@ -302,8 +309,7 @@ def run_agent1(file_path: str) -> RiskAssessment:
 
     risk_assessment = run_risk_analysis(retriever, question)
     risk_assessment.case_id = case_id                          # overwrite LLM's guess with reliably extracted case_id
-    risk_assessment.adverse_media_count = len(risk_assessment.adverse_media_articles)  # 
-    # overwrite LLM's count with the actual list length, guaranteed accurate
+    risk_assessment.adverse_media_count = len(risk_assessment.adverse_media_articles)  # overwrite LLM's count with the actual list length, guaranteed accurate
 
     return risk_assessment
 

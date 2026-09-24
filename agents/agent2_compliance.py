@@ -26,7 +26,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 REGULATORY_DOCS_PATH = os.path.join(BASE_DIR, 'knowledge_base', 'regulatory_docs')
 
 
-##  Step 1 of RAG Pipeline: (Document Ingestion) Load ALL regulatory PDFs from the folder using DirectoryLoader
+##  Step 1 of RAG Pipeline: (Document Ingestion) Load all regulatory PDFs from the folder using DirectoryLoader
 
 def load_regulatory_docs():
     loader = PyPDFDirectoryLoader(REGULATORY_DOCS_PATH)   # PyPDFDirectoryLoader, load all files from the folder
@@ -89,7 +89,7 @@ def create_retriever(vector_store):
 
 
 """
-    Unlike Agent 1, which runs ONE broad search (k=12) covering an entire case, document spanning many different topics (ThreatMetrix, IDU, TrueID, TraceIQ, Bridger all mixed together),
+    Unlike Agent 1, which runs one broad search (k=12) covering an entire case, document spanning many different topics (ThreatMetrix, IDU, TrueID, TraceIQ, Bridger all mixed together),
     Agent 2 will run THREE SEPARATE searches, each narrowly focused on just ONE regulatory topic:
         1. GDPR automated decision-making safeguards
         2. FCA accountability and explainability
@@ -103,8 +103,6 @@ def create_retriever(vector_store):
 
 
 # Augmentation 
-
-
 
 def create_prompt():
     parser = PydanticOutputParser(pydantic_object=ComplianceStatus)  # Create a parser tied to the ComplianceStatus schema
@@ -315,6 +313,16 @@ def create_prompt():
 
     return compliance_prompt.partial(format_instructions=format_instructions)
 
+# -----------------------------------------------------------------------
+# FCA RECHECK - Post-Synthesis Final FCA Check
+# -----------------------------------------------------------------------
+# These two functions (create_fca_final_check_prompt, run_fca_final_check) support the FCA Recheck Node in main.py.
+# They are defined here (in agent2) because they share the same
+# regulatory retriever, LLM setup, and Pydantic parser infrastructure.
+# They are NOT called by run_agent2() they are called directly
+# by fca_recheck_node() in main.py after Agent 3 finishes.
+# -----------------------------------------------------------------------
+
 
 def create_fca_final_check_prompt():
     parser = PydanticOutputParser(pydantic_object=FCAFinalCheck)
@@ -502,48 +510,3 @@ if __name__ == "__main__":
     print("="*80)
     print(compliance_status)
     print("\n" + "="*80 + "\n")
-
-
-
-# TODO: enhanced_due_diligence_completed - future implementation plan
-#
-# WHAT: This field tracks whether a human analyst has actually carried out
-# Enhanced Due Diligence (source of wealth check, senior management approval,
-# enhanced monitoring setup) for a specific case - a real-world action, not
-# something extractable from any identity risk report.
-#
-# WHERE IT BELONGS: main.py's workflow/state layer - NOT Agent 1, NOT Agent 2.
-# Neither agent's LLM should generate this value, since it's not a fact about
-# the applicant or the case data - it's a fact about what YOUR OWN COMPANY'S
-# compliance team has actually done, tracked by your system's workflow, not
-# read from text.
-#
-# HOW IT WOULD WORK, once built:
-# 1. Case runs through Agent 1 -> Agent 2 -> Agent 3, producing a FinalReport.
-# 2. If enhanced_due_diligence_required is True, main.py flags the case for
-#    a human analyst (e.g. via the notification/reviewer system discussed
-#    earlier), rather than assuming completion or non-completion.
-# 3. The human analyst performs the real EDD work (verifies source of wealth,
-#    gets senior sign-off, sets up monitoring).
-# 4. The analyst then manually confirms completion in the system - e.g. a
-#    simple CLI prompt, a database flag, or a field in the notification
-#    reply-handling logic already planned.
-# 5. main.py stores this confirmed value (True or False) in state, and Agent 2
-#    uses the REAL confirmed value instead of the current default of None.
-#
-# CURRENT STATE: defaults to None (not yet confirmed) everywhere, since no
-# tracking mechanism exists yet. Agent 2's compliance rules treat None as
-# "Pending Verification" rather than a hard failure - this is honest and
-# correct until step 1-5 above are built.
-
-
-
-# TODO: aml_kyc_compliant is now a 3-state field (Compliant / Non-Compliant /
-# Pending Verification) instead of a plain bool, specifically to handle the
-# enhanced_due_diligence_completed=None case honestly - a "Pending Verification"
-# result reflects genuine uncertainty (EDD required, but completion not yet
-# confirmed by a human analyst) rather than falsely asserting compliance (True)
-# or falsely asserting failure (False). Once the human-confirmation feature
-# above is built, "Pending Verification" cases should be automatically
-# re-evaluated once enhanced_due_diligence_completed changes from None to a
-# real True/False value.

@@ -1,4 +1,10 @@
-from typing import List, Optional, Literal
+"""
+schemas.py: Pydantic models defining the structured output schemas for all three agents in the LexisNexis Identity Risk Management pipeline.
+These schemas enforce type validation and ensure consistent, structured outputs from the LLM across all pipeline stages.
+
+"""
+
+from typing import List, Optional, Literal             # typing: for type_hinting
 from pydantic import BaseModel, Field, model_validator # model_validator, the decorator needed to run custom logic before validation
 
 
@@ -8,7 +14,7 @@ class PreviousAddress(BaseModel):
     sources_count: int = Field(description="Number of data sources confirming this address")
     occupied_period: str = Field(description="Date range this address was occupied, e.g. '2018 - 2026'")
     forwarding_confirmed: Optional[bool] = Field(default=None, description="Whether a forwarding address link was confirmed to the next address, if applicable")
-    source_records: List[str] = Field(default_factory=list, description="List of specific source records confirming this address, e.g. 'Registry Trust: Electoral roll entry 2018-2026'")
+    source_records: List[str] = Field(default_factory=list, description="List of specific source records confirming this address, e.g. 'Registry Trust: Electoral roll entry 2018-2026'")  # deafult_factory=list, is used when we want a field to default to an empty list, when no valu is provided.
 
 
 class Directorship(BaseModel):
@@ -27,7 +33,7 @@ class PropertyRecord(BaseModel):
 
 class CCJRecord(BaseModel):
     court: str = Field(description="Court that issued the County Court Judgment")
-    date: str = Field(description="Date of the judgment")
+    date: str = Field(description="Date of the judgment in DD/MM/YYYY format, e.g. '22/01/2025'")
     amount: Optional[str] = Field(default=None, description="Judgment amount, if disclosed")
 
 
@@ -102,7 +108,7 @@ class TraceIQFindings(BaseModel):
             # Only proceed if data is actually a dictionary (normal expected case)
 
             list_fields = ['aliases', 'additional_properties', 'linked_occupants_names',
-                          'previous_addresses', 'ccj_records', 'directorships']
+                          'previous_addresses', 'ccj_records', 'directorships', 'source_records']
             # The 6 fields that are supposed to be lists, and are at risk of being null
 
             for field in list_fields:
@@ -144,7 +150,7 @@ class RiskAssessment(BaseModel):
 
     # PEP and Sanctions screening (Bridger Insight XG)
     pep_match: bool = Field(description="True if a Politically Exposed Person (PEP) match was identified for this case, False otherwise")
-    pep_confidence: Optional[float] = Field(default=None, description="Confidence score 0-100 for PEP match, if applicable") # High confidence (e.g., 92%) → very likely this really is a PEP/sanctioned person -> treat seriously,   Low confidence (e.g., 58%) -> could genuinely be them, or could be a coincidental name match -> needs more verification before acting on it [LLM-derived, but grounded in real data.]
+    pep_confidence: Optional[float] = Field(default=None, description="Confidence score 0-100 for PEP match, if applicable") # High confidence (e.g., 92%) -> very likely this really is a PEP/sanctioned person -> treat seriously,   Low confidence (e.g., 58%) -> could genuinely be them, or could be a coincidental name match -> needs more verification before acting on it [LLM-derived, but grounded in real data]
     pep_evidence: Optional[ScreeningEvidence] = Field(default=None, description="Source list, matched record, and match basis for the PEP match, if applicable")
     sanctions_match: bool = Field(description="True if a sanctions list match was identified, False otherwise")
     sanctions_confidence: Optional[float] = Field(default=None, description="Confidence score 0-100 for sanctions match, if applicable")  # LLM-derived, grounded in stated evidence (e.g., "exact match" vs. "close name match, transliteration variant")
@@ -158,7 +164,7 @@ class RiskAssessment(BaseModel):
     confidence_level: Literal["LOW", "MEDIUM", "HIGH"] = Field(description="Confidence level of assessment") # LLM extracts/derives. Same as above - LLM's own label (LOW/MEDIUM/HIGH) for its confidence, alongside the numeric version.
     requires_human_review: bool = Field(description="Whether human review is required") # CODE calculates. Not from the LLM, not from the raw data - routing function computes this (based on confidence_score)
     enhanced_due_diligence_required: bool = Field(description="Whether enhanced due diligence is required for this case") # CODE calculates. Routing function computes this (based on risk_score and pep_match)
-    enhanced_due_diligence_completed: Optional[bool] = Field(default=None, description="Whether EDD was completed - None if not yet tracked by this system, requires human analyst confirmation")   # From terminal
+    enhanced_due_diligence_completed: Optional[bool] = Field(default=None, description="Whether EDD was completed - None if not yet tracked by this system, requires human analyst confirmation")
     # TraceIQ integration + audit fields
     trace_iq: TraceIQFindings = Field(description="Structured findings from TraceIQ identity tracing")  # LLM reads the raw TraceIQ section of the case text and extracts/structures it into the TraceIQFindings object
     detailed_analysis: str = Field(description="Full detailed explanation of each risk signal identified, written as connected paragraphs") # The LLM writes original explanatory prose connecting all the risk signals together
@@ -175,17 +181,18 @@ class RiskAssessment(BaseModel):
             for field in list_fields:
                 if data.get(field) is None:
                     data[field] = []
-            return data
+        return data
 
 
 
 # ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 class ComplianceStatus(BaseModel):
+     
+    """ Structured output from agent 2 - Compliance Agent """
 
     # core compliance verdicts
-
-    """ Structured output from agent 2 - Compliance Agent """
+   
     case_id: str = Field(description="Unique case identifier")
     gdpr_compliant: bool = Field(description="whether case meets GDPR requirements")
     fca_compliant: bool = Field(description="whether case meets FCA requirements")
@@ -203,7 +210,7 @@ class ComplianceStatus(BaseModel):
     '''
 
     regulatory_actions_required: List[str] = Field(description="List of specific actions required to bring this case into compliance")
-    '''Same retrieved regulatory text is used here, but instead of describing WHAT is wrong (that's compliance_flags), this field describes WHAT TO DO about it - the specific fix, based on what
+    '''Same retrieved regulatory text is used here, but instead of describing WHAT is wrong (that's compliance_flags), this field describes WHAT to do about it - the specific fix, based on what
        the actual retrieved regulation requires - e.g. "Complete enhanced due diligence for PEP match"
     '''
 

@@ -66,9 +66,9 @@ def agent1_node(state: IdentityRiskState) -> IdentityRiskState:
     file_path = state["file_path"]
 
     try:
-        risk_assessment = run_agent1(file_path)
+        risk_assessment = run_agent1(file_path)  # Attempt to run Agent 1, if it succeeds, great. If anything goes wrong, jump to except.
 
-    except Exception as e:
+    except Exception as e:   # Catches any type of error that could occur, e is the actual error object containing the error message (Exception is the base class for all errors in Python.)
         # if ANYTHING goes wrong (API down, PDF corrupted, parsing failure etc.)
         # log the failure to the audit trail before stopping the pipeline
         print(f"[AGENT 1] Failed: {e}")
@@ -331,14 +331,14 @@ def agent2_node(state: IdentityRiskState) -> IdentityRiskState:
         compliance_status = run_agent2(risk_assessment)
 
     except Exception as e:
-        # if ANYTHING goes wrong (API down, RAG retrieval failure, parsing failure etc.)
+        # if anything goes wrong (API down, RAG retrieval failure, parsing failure etc.)
         # log the failure to the audit trail before stopping the pipeline
         print(f"[AGENT 2] Failed: {e}")
         state["audit_log"].append(
             create_audit_entry(
                 case_id=risk_assessment.case_id,  # case ID known since Agent 1 already succeeded
                 step="Agent 2 - Compliance",
-                action="FAILED — exception during compliance assessment",
+                action="FAILED - exception during compliance assessment",
                 details={"error": str(e)}  # record exactly what went wrong
             )
         )
@@ -465,16 +465,16 @@ def fca_recheck_node(state: IdentityRiskState) -> IdentityRiskState:
     # Fixes stale "FCA: No action required" left over from the early check -
     # rebuilds the FCA action item to match the FINAL, corrected verdict
 
-    updated_actions = []                                                            # build a fresh, corrected version of the actions list
+    updated_actions = []                                                                        # build a fresh, corrected version of the actions list
     for action in final_report.compliance_status.regulatory_actions_required:
-        if action.startswith("FCA:"):                                               # find the one action item that's about FCA
-            if fca_final_result.fca_compliant_final:                                # True = FCA is compliant
+        if action.startswith("FCA:"):                                                           # find the one action item that's about FCA
+            if fca_final_result.fca_compliant_final:                                            # True = FCA is compliant
                 updated_actions.append("FCA: No action required (confirmed by final review).")
-            else:                                                                   # False = FCA is non-compliant
-                updated_actions.append(f"FCA: {fca_final_result.reason}")           # add the FCA action using the Final Check's own reason as the explanation
+            else:                                                                               # False = FCA is non-compliant
+                updated_actions.append(f"FCA: {fca_final_result.reason}")                       # add the FCA action using the Final Check's own reason as the explanation
         else:
-            updated_actions.append(action)                                          # not the FCA entry - keep it exactly as it was (GDPR or AML/KYC)
-    final_report.compliance_status.regulatory_actions_required = updated_actions    # save the corrected list back into the final report
+            updated_actions.append(action)                                                      # not the FCA entry - keep it exactly as it was (GDPR or AML/KYC)
+    final_report.compliance_status.regulatory_actions_required = updated_actions                # save the corrected list back into the final report
 
     state["final_report"] = final_report
     state["audit_log"].append(
@@ -492,7 +492,7 @@ def fca_recheck_node(state: IdentityRiskState) -> IdentityRiskState:
     return state
 
 
-## LangGraph Construction: Connects agent1 -> routing -> agent2, in sequence, using IdentityRiskState as the shared data that flows between each step.
+## LangGraph Construction: Connects agent1 -> routing -> agent2 -> agent3 -> fca_recheck, in sequence, using IdentityRiskState as the shared data that flows between each step.
 #-----------------------------------------------------------------------------------------------------------------------------------------------------
 
 def build_graph():
@@ -515,7 +515,7 @@ def build_graph():
     graph.add_edge("agent3", "fca_recheck")
     graph.add_edge("fca_recheck", END)
 
-    # Comile the graph
+    # Compile the graph
     workflow = graph.compile()
 
     return workflow
@@ -561,6 +561,10 @@ def run_pipeline(file_path: str):
         pdf_filepath=pdf_filepath
     )
 
+
+    # final_state is the fully updated version of the state, after passing through all 3 nodes (agent1 → routing → agent2) 
+    # in sequence, containing everything each step contributed along the way.
+
     return final_state, audit_filepath                  # the file path where the audit trail JSON was actually saved
 
     # final_state is the fully updated version of the state, after passing through all 3 nodes (agent1 → routing → agent2) 
@@ -570,7 +574,7 @@ def run_pipeline(file_path: str):
 if __name__ == "__main__":                                                 # this code only runs if you execute main.py directly
     from agents.agent3_report import print_readable_report
 
-    FILE_PATH = os.path.join(BASE_DIR, "data", "CASE-2026-318.pdf")        # builds the full path to a specific test case file, using BASE_DIR (project's root folder) to construct it correctly.
+    FILE_PATH = os.path.join(BASE_DIR, "data", "CASE-2026-303.pdf")        # builds the full path to a specific test case file, using BASE_DIR (project's root folder) to construct it correctly.
     final_state, audit_filepath = run_pipeline(FILE_PATH)
 
     print("\n" + "="*80)
