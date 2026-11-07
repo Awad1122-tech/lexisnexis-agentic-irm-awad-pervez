@@ -46,7 +46,7 @@ load_dotenv()
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-###############################################################################################################################################
+# =========================================================================================================================================
 
 # Dashboard base URL - where Flask is running
 # In production this would be a real domain (e.g. https://reviewer.company.com)
@@ -55,7 +55,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DASHBOARD_BASE_URL = "http://localhost:5000"   # base address of the Flask dashboard running locally, combined with the token to build the full review URL
 
 
-###############################################################################################################################################
+# ==========================================================================================================================================
 
 
 
@@ -562,20 +562,14 @@ def run_pipeline(file_path: str):
     )
 
 
-    # final_state is the fully updated version of the state, after passing through all 3 nodes (agent1 → routing → agent2) 
-    # in sequence, containing everything each step contributed along the way.
-
     return final_state, audit_filepath                  # the file path where the audit trail JSON was actually saved
-
-    # final_state is the fully updated version of the state, after passing through all 3 nodes (agent1 → routing → agent2) 
-    # in sequence, containing everything each step contributed along the way.
 
 
 if __name__ == "__main__":                                                 # this code only runs if you execute main.py directly
     from agents.agent3_report import print_readable_report
 
-    FILE_PATH = os.path.join(BASE_DIR, "data", "CASE-2026-303.pdf")        # builds the full path to a specific test case file, using BASE_DIR (project's root folder) to construct it correctly.
-    final_state, audit_filepath = run_pipeline(FILE_PATH)
+    FILE_PATH = os.path.join(BASE_DIR, "data", "CASE-2026-304.pdf")        # builds the full path to a specific test case file, using BASE_DIR (project's root folder) to construct it correctly.
+    final_state, audit_filepath = run_pipeline(FILE_PATH)                  # run_pipeline returns two values, and they are unpacked into two separate variables: final_state - gets the first return value and audit_filepath - gets the second return value,   This is called tuple unpacking
 
     print("\n" + "="*80)
     print("PIPELINE COMPLETE - FINAL REPORT")

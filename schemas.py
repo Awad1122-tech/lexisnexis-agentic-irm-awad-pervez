@@ -8,13 +8,13 @@ from typing import List, Optional, Literal             # typing: for type_hintin
 from pydantic import BaseModel, Field, model_validator # model_validator, the decorator needed to run custom logic before validation
 
 
-class PreviousAddress(BaseModel):
+class PreviousAddress(BaseModel):                           # PreviousAddress is a Pydantic model class, it inherits from BaseModel which gives it automatic data validation and schema enforcement
     address: str = Field(description="The previous address")
     residency_score: str = Field(description="Confidence level the subject lived here, e.g. High, Medium, Low")     # LLM's own assessment of confidence in that address
     sources_count: int = Field(description="Number of data sources confirming this address")
     occupied_period: str = Field(description="Date range this address was occupied, e.g. '2018 - 2026'")
     forwarding_confirmed: Optional[bool] = Field(default=None, description="Whether a forwarding address link was confirmed to the next address, if applicable")
-    source_records: List[str] = Field(default_factory=list, description="List of specific source records confirming this address, e.g. 'Registry Trust: Electoral roll entry 2018-2026'")  # deafult_factory=list, is used when we want a field to default to an empty list, when no valu is provided.
+    source_records: List[str] = Field(default_factory=list, description="List of specific source records confirming this address, e.g. 'Registry Trust: Electoral roll entry 2018-2026'")  # deafult_factory=list, is used when we want a field to an empty list, when no value is provided.
 
 
 class Directorship(BaseModel):

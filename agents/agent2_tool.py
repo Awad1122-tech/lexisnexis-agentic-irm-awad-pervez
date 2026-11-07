@@ -515,19 +515,6 @@ def run_agent2_tool_calling(risk_assessment: RiskAssessment) -> ComplianceStatus
 
 
 
-'''
-
-if __name__ == "__main__":
-    from agents.agent1_risk import run_agent1
-
-    FILE_PATH = os.path.join(BASE_DIR, 'data', 'CASE-2026-301.pdf')
-    risk_assessment = run_agent1(FILE_PATH)
-    compliance_status = run_agent2(risk_assessment)
-    print(compliance_status.case_id)
-    print(compliance_status)
-
-'''
-
 if __name__ == "__main__":
     from agents.agent1_risk import run_agent1
 
@@ -562,48 +549,3 @@ if __name__ == "__main__":
     print(compliance_status_tool_calling)
     print()
     print(f"  [Tool Call] Model searched for: {search_query}")
-
-
-
-# TODO: enhanced_due_diligence_completed - future implementation plan
-#
-# WHAT: This field tracks whether a human analyst has actually carried out
-# Enhanced Due Diligence (source of wealth check, senior management approval,
-# enhanced monitoring setup) for a specific case - a real-world action, not
-# something extractable from any identity risk report.
-#
-# WHERE IT BELONGS: main.py's workflow/state layer - NOT Agent 1, NOT Agent 2.
-# Neither agent's LLM should generate this value, since it's not a fact about
-# the applicant or the case data - it's a fact about what YOUR OWN COMPANY'S
-# compliance team has actually done, tracked by your system's workflow, not
-# read from text.
-#
-# HOW IT WOULD WORK, once built:
-# 1. Case runs through Agent 1 -> Agent 2 -> Agent 3, producing a FinalReport.
-# 2. If enhanced_due_diligence_required is True, main.py flags the case for
-#    a human analyst (e.g. via the notification/reviewer system discussed
-#    earlier), rather than assuming completion or non-completion.
-# 3. The human analyst performs the real EDD work (verifies source of wealth,
-#    gets senior sign-off, sets up monitoring).
-# 4. The analyst then manually confirms completion in the system - e.g. a
-#    simple CLI prompt, a database flag, or a field in the notification
-#    reply-handling logic already planned.
-# 5. main.py stores this confirmed value (True or False) in state, and Agent 2
-#    uses the REAL confirmed value instead of the current default of None.
-#
-# CURRENT STATE: defaults to None (not yet confirmed) everywhere, since no
-# tracking mechanism exists yet. Agent 2's compliance rules treat None as
-# "Pending Verification" rather than a hard failure - this is honest and
-# correct until step 1-5 above are built.
-
-
-
-# TODO: aml_kyc_compliant is now a 3-state field (Compliant / Non-Compliant /
-# Pending Verification) instead of a plain bool, specifically to handle the
-# enhanced_due_diligence_completed=None case honestly - a "Pending Verification"
-# result reflects genuine uncertainty (EDD required, but completion not yet
-# confirmed by a human analyst) rather than falsely asserting compliance (True)
-# or falsely asserting failure (False). Once the human-confirmation feature
-# above is built, "Pending Verification" cases should be automatically
-# re-evaluated once enhanced_due_diligence_completed changes from None to a
-# real True/False value.

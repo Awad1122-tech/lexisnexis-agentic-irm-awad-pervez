@@ -30,7 +30,7 @@ REGULATORY_DOCS_PATH = os.path.join(BASE_DIR, 'knowledge_base', 'regulatory_docs
 
 def load_regulatory_docs():
     loader = PyPDFDirectoryLoader(REGULATORY_DOCS_PATH)   # PyPDFDirectoryLoader, load all files from the folder
-    docs = loader.load()
+    docs = loader.load()                                  # load() is a method of the PyPDFDirectoryLoader class, (reads every PDF in that folder and returns a list of Document objects) accessed through the loader object
     return docs              # docs = list of Document objects (one per PDF page), each with: page_content, and metadata
 
 
@@ -42,9 +42,9 @@ def load_regulatory_docs():
 def split_documents(docs):
     splitter = RecursiveCharacterTextSplitter(
         chunk_size = 800,
-        chunk_overlap = 100    
+        chunk_overlap = 100 
     )
-    chunks = splitter.split_documents(docs)
+    chunks = splitter.split_documents(docs)      # split_documents() is its method that returns chunks as Document objects.
     return chunks
 
 
@@ -84,7 +84,7 @@ def create_retriever(vector_store):
         search_type="similarity",
         search_kwargs={"k": 6}
     )
-    return retriever
+    return retriever                        # returns the 6 most relevant Document objects (original text + metadata) based on cosine similarity
 
 
 

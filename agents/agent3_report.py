@@ -284,7 +284,7 @@ def run_agent3(risk_assessment: RiskAssessment, compliance_status: ComplianceSta
         risk_assessment=risk_assessment,
         compliance_status=compliance_status,
         audit_trail_reference=audit_trail_reference,
-        report_timestamp=datetime.now().isoformat()
+        report_timestamp=datetime.now().isoformat()       # # current date and time as a string in ISO 8601 format e.g. 2026-10-15T14:32:05.123456
     )
 
     return final_report

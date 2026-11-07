@@ -92,7 +92,7 @@ Why we are using this here:
 # Takes all PDF text -> joins into one string -> converts to a unique 32-character fingerprint -> returns it
 def get_content_hash(docs) -> str:
     full_text = "\n".join(doc.page_content for doc in docs)
-    return hashlib.md5(full_text.encode()).hexdigest()
+    return hashlib.md5(full_text.encode()).hexdigest() # 32-character hexadecimal string (the MD5 hash)
 
 
 
@@ -136,7 +136,7 @@ def create_vector_store(chunks, case_id: str, content_hash: str):
 
     needs_refresh = True
     if len(existing['ids']) > 0:
-        existing_hash = existing['metadatas'][0].get('content_hash')
+        existing_hash = existing['metadatas'][0].get('content_hash')  # the existing_hash contain the hash_content (32-character MD5 fingerprint) of the first chunk
         if existing_hash == content_hash:
             needs_refresh = False                                          # case exists AND hash matches -> skip embedding
 
@@ -145,7 +145,7 @@ def create_vector_store(chunks, case_id: str, content_hash: str):
         for chunk in chunks:
             chunk.metadata['case_id'] = case_id                            # stamp case ID on every chunk
             chunk.metadata['content_hash'] = content_hash                  # stamp hash on every chunk
-        vector_store.add_documents(chunks)                 # vector_store.add_documents(chunks) = embed (using embedding_model) + store (into ChromaDB), both happening together, in that exact order, within this single line.
+        vector_store.add_documents(chunks)                                 # vector_store.add_documents(chunks) = embed (using embedding_model) + store (into ChromaDB), both happening together, in that exact order, within this single line.
 
     return vector_store
 
@@ -186,7 +186,7 @@ def create_prompt():
 
     # .from_messages() is a method of the ChatPromptTemplate class used to construct/create a ChatPromptTemplate object from a list of role-based messages.
 
-    risk_prompt = ChatPromptTemplate.from_messages([                                               # Also ChatPromptTemplate is a runnable
+    risk_prompt = ChatPromptTemplate.from_messages([                                               # static method call, class-level method  (ChatPromptTemplate is a runnable)
         ("system", """ You are an expert identity risk analyst at LexisNexis Risk Solutions. 
          You analyse identity verification, fraud screening, and identity tracing data from
          LexisNexis products: ThreatMetrix, IDU / Instant Verify International, TrueID, TraceIQ, and Bridger Insight XG.
@@ -264,12 +264,12 @@ def run_risk_analysis(retriever, question: str):
     max_new_tokens=2000
     )
 
-    model = ChatHuggingFace(llm=llm)
+    model = ChatHuggingFace(llm=llm)      #  composition, passing one object as an argument into another object’s constructor.
 
     # Job 2 - CHECKING the LLM's actual response (happens AFTER the LLM responds):
 
     """
-    This is where parser (the PydanticOutputParser object) actually does its real work - after the LLM has already generated text back. 
+    This is where parser (the PydanticOutputParser object) actually does its real work,  after the LLM has already generated text back. 
     The parser takes that raw text, tries to interpret it as JSON, and then runs it through Pydantic's validation (checking types, required fields, etc.)
     
     """
